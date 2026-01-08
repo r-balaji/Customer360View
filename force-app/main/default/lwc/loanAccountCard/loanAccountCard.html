@@ -1,0 +1,98 @@
+<template>
+    <article class="slds-card loan-card" data-loan-id={loanData.loanId}>
+        <div class="slds-card__header slds-grid">
+            <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                <div class="slds-media__figure">
+                    <lightning-icon icon-name="standard:loan" size="small"></lightning-icon>
+                </div>
+                <div class="slds-media__body">
+                    <h2 class="slds-card__header-title">
+                        <span>Loan Account: <a href={loanRecordUrl} onclick={navigateToLoan} target="_blank" rel="noopener noreferrer" class="loan-id-link">{loanData.loanId}</a></span>
+                        <span class={statusBadgeClassWithMargin}>{loanData.status}</span>
+                        <template if:true={loanData.daysPastDue}>
+                            <span class="slds-badge slds-badge_warning slds-m-left_small">
+                                Past Due: {loanData.daysPastDue} days
+                            </span>
+                        </template>
+                    </h2>
+                </div>
+            </header>
+            <div class="slds-no-flex">
+                <button class="slds-button slds-button_neutral" onclick={handleToggleExpand}>
+                    <template if:true={isExpanded}>
+                        <lightning-icon icon-name="utility:chevronup" size="x-small"></lightning-icon>
+                        Collapse
+                    </template>
+                    <template if:false={isExpanded}>
+                        <lightning-icon icon-name="utility:chevrondown" size="x-small"></lightning-icon>
+                        View Details
+                    </template>
+                </button>
+            </div>
+        </div>
+
+        <div class="slds-card__body slds-card__body_inner">
+            <!-- Quick Info Grid -->
+            <div class="slds-grid slds-gutters slds-m-bottom_medium">
+                <div class="slds-col slds-size_1-of-5">
+                    <div class="slds-text-align_center">
+                        <div class="slds-text-body_small slds-text-color_weak">Loan Amount</div>
+                        <div class="slds-text-heading_small">{formattedLoanAmount}</div>
+                    </div>
+                </div>
+                <div class="slds-col slds-size_1-of-5">
+                    <div class="slds-text-align_center">
+                        <div class="slds-text-body_small slds-text-color_weak">Principal Remaining</div>
+                        <div class="slds-text-heading_small">{formattedPrincipalRemaining}</div>
+                    </div>
+                </div>
+                <div class="slds-col slds-size_1-of-5">
+                    <div class="slds-text-align_center">
+                        <div class="slds-text-body_small slds-text-color_weak">Interest Rate</div>
+                        <div class="slds-text-heading_small">{loanData.interestRate}% APR</div>
+                    </div>
+                </div>
+                <div class="slds-col slds-size_1-of-5">
+                    <div class="slds-text-align_center">
+                        <div class="slds-text-body_small slds-text-color_weak">Start Date</div>
+                        <div class="slds-text-heading_small">{formattedLoanEffectiveDate}</div>
+                    </div>
+                </div>
+                <div class="slds-col slds-size_1-of-5">
+                    <div class="slds-text-align_center">
+                        <div class="slds-text-body_small slds-text-color_weak">Next Payment</div>
+                        <div class="slds-text-heading_small">{formattedNextPaymentDate}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="slds-m-bottom_medium">
+                <div class="slds-text-body_small slds-m-bottom_x-small">
+                    Progress: {progressPercentage}% Paid
+                </div>
+                <div class="slds-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow={progressPercentage}>
+                    <span class="slds-progress-bar__value" style={progressBarStyle}></span>
+                </div>
+            </div>
+
+            <!-- Expanded Details -->
+            <template if:true={isExpanded}>
+                <template if:true={isLoading}>
+                    <lightning-spinner alternative-text="Loading loan details" size="medium"></lightning-spinner>
+                </template>
+
+                <template if:false={isLoading}>
+                    <template if:true={loanDetails}>
+                        <c-loan-details-panel 
+                            loan-details={loanDetails}
+                            active-tab={activeTab}
+                            ontabchange={handleTabChange}>
+                        </c-loan-details-panel>
+                    </template>
+                </template>
+            </template>
+        </div>
+    </article>
+</template>
+

@@ -1,0 +1,127 @@
+/* Loan Card - Professional Enterprise Styling */
+.loan-card {
+    margin-bottom: 1rem;
+    background: #FFFFFF;
+    border: 1px solid #DDDBDA;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    transition: all 0.2s ease;
+    overflow: hidden;
+}
+
+.loan-card:hover {
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.12);
+    border-color: #C9C9C9;
+}
+
+.loan-card .slds-card__header {
+    background: #F8F9FA;
+    border-bottom: 1px solid #DDDBDA;
+    padding: 1rem 1.5rem;
+}
+
+.loan-card .slds-card__header-title {
+    font-weight: 600;
+    color: #181818;
+    font-size: 1rem;
+}
+
+.loan-card .slds-card__body {
+    padding: 1.5rem;
+    background: #FFFFFF;
+}
+
+.loan-card .slds-badge {
+    font-weight: 500;
+    padding: 0.25rem 0.75rem;
+    border-radius: 0.25rem;
+}
+
+/* Status Badge Styling */
+.loan-card .status-badge-good-standing {
+    background-color: #2E844A;
+    color: #FFFFFF;
+    border: 1px solid #2E844A;
+}
+
+.loan-card .status-badge-bad-standing {
+    background-color: #C23934;
+    color: #FFFFFF;
+    border: 1px solid #C23934;
+}
+
+/* Loan ID Link Styling */
+.loan-id-link {
+    color: #0176D3;
+    text-decoration: none;
+    font-weight: 600;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.loan-id-link:hover {
+    color: #014486;
+    text-decoration: underline;
+}
+
+.loan-id-link:active {
+    color: #013459;
+}
+
+.loan-card .slds-card__header-title {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.loan-card .slds-button {
+    border: 1px solid #DDDBDA;
+    background: #FFFFFF;
+    color: #0176D3;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.loan-card .slds-button:hover {
+    background: #F3F2F2;
+    border-color: #C9C9C9;
+}
+
+/* Quick Info Grid Styling */
+.loan-card .slds-grid .slds-col {
+    padding: 0.75rem;
+    border-right: 1px solid #F3F2F2;
+}
+
+.loan-card .slds-grid .slds-col:last-child {
+    border-right: none;
+}
+
+.loan-card .slds-text-heading_small {
+    font-weight: 600;
+    color: #181818;
+    margin-top: 0.25rem;
+}
+
+.loan-card .slds-text-body_small {
+    color: #706E6B;
+    font-size: 0.8125rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Progress Bar Styling */
+.loan-card .slds-progress-bar {
+    background: #E5E5E5;
+    border-radius: 0.25rem;
+    height: 0.5rem;
+    overflow: hidden;
+}
+
+.loan-card .slds-progress-bar__value {
+    background: #0176D3;
+    border-radius: 0.25rem;
+    transition: width 0.3s ease;
+}
+

@@ -1,0 +1,309 @@
+<template>
+    <div class="customer-360-container">
+        <lightning-card title="Customer 360 View" icon-name="standard:account">
+            <!-- Customer Search Section -->
+            <div class="search-section">
+            <lightning-messages></lightning-messages>
+            <div class="slds-grid slds-gutters">
+                <div class="slds-col slds-size_1-of-2">
+                    <lightning-record-picker
+                        label="Customer Account"
+                        placeholder="Search Accounts..."
+                        object-api-name="Account"
+                        display-field-name="Name"
+                        value-field-name="Id"
+                        value={selectedAccountId}
+                        onchange={handleAccountChange}
+                        onselection={handleAccountChange}
+                        required>
+                    </lightning-record-picker>
+                </div>
+                <div class="slds-col slds-size_1-of-2 slds-align_absolute-center">
+                    <lightning-button 
+                        label="Search" 
+                        variant="brand"
+                        onclick={handleSearch}
+                        disabled={isSearchDisabled}
+                        class="slds-m-left_small">
+                    </lightning-button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Account Information Section -->
+        <template if:true={hasAccountInfo}>
+            <div class="slds-p-around_medium account-info-section">
+                <div class="account-info-card">
+                    <div class="account-info-header">
+                        <div class="slds-media">
+                            <div class="slds-media__figure">
+                                <lightning-icon icon-name="standard:account" size="medium" class="account-header-icon"></lightning-icon>
+                            </div>
+                            <div class="slds-media__body">
+                                <h2 class="slds-text-heading_medium account-info-title">Account Information</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="account-info-body">
+                        <div class="slds-grid slds-gutters">
+                            <div class="slds-col slds-size_1-of-2 account-info-left">
+                                <div class="slds-media account-name-section">
+                                    <div class="slds-media__figure">
+                                        <lightning-icon icon-name="standard:account" size="small" class="account-icon"></lightning-icon>
+                                    </div>
+                                    <div class="slds-media__body">
+                                        <div class="slds-text-heading_small slds-m-bottom_x-small">
+                                            <a href={accountRecordUrl} onclick={navigateToAccount} target="_blank" rel="noopener noreferrer" class="account-name-link">
+                                                {accountInfo.customerName}
+                                            </a>
+                                        </div>
+                                        <template if:true={accountInfo.accountNumber}>
+                                            <div class="slds-text-body_small account-number">
+                                                Account #: {accountInfo.accountNumber}
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="slds-col slds-size_1-of-2 account-info-right">
+                                <div class="slds-grid slds-gutters">
+                                    <div class="slds-col slds-size_1-of-2">
+                                        <template if:true={accountInfo.email}>
+                                            <div class="slds-media slds-media_center account-info-item">
+                                                <div class="slds-media__figure">
+                                                    <lightning-icon icon-name="utility:email" size="small" class="info-icon"></lightning-icon>
+                                                </div>
+                                                <div class="slds-media__body">
+                                                    <div class="slds-text-body_regular account-info-text">{accountInfo.email}</div>
+                                                </div>
+                                            </div>
+                                        </template>
+                                        <template if:true={accountInfo.phone}>
+                                            <div class="slds-media slds-media_center account-info-item">
+                                                <div class="slds-media__figure">
+                                                    <lightning-icon icon-name="utility:phone_portrait" size="small" class="info-icon"></lightning-icon>
+                                                </div>
+                                                <div class="slds-media__body">
+                                                    <div class="slds-text-body_regular account-info-text">{accountInfo.phone}</div>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </div>
+                                    <div class="slds-col slds-size_1-of-2">
+                                        <template if:true={accountInfo.address}>
+                                            <div class="slds-media slds-media_center account-info-item">
+                                                <div class="slds-media__figure">
+                                                    <lightning-icon icon-name="utility:location" size="small" class="info-icon"></lightning-icon>
+                                                </div>
+                                                <div class="slds-media__body">
+                                                    <div class="slds-text-body_regular account-info-text">{accountInfo.address}</div>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Charts Section -->
+                        <div class="charts-section slds-m-top_medium">
+                            <div class="slds-grid slds-gutters">
+                                <div class="slds-col slds-size_1-of-2">
+                                    <div class="chart-card">
+                                        <h3 class="slds-text-heading_small slds-m-bottom_small">Loan Progress</h3>
+                                        <div class="chart-container">
+                                            <div class="pie-chart-wrapper">
+                                                <svg class="pie-chart" viewBox="0 0 200 200">
+                                                    <circle class="pie-chart-background" cx="100" cy="100" r="90"></circle>
+                                                    <path class="pie-segment pie-segment-paid" d={loanProgressPaidPath}></path>
+                                                    <path class="pie-segment pie-segment-remaining" d={loanProgressRemainingPath}></path>
+                                                </svg>
+                                                <div class="pie-chart-center">
+                                                    <div class="pie-chart-center-value">{formattedTotalLoanAmount}</div>
+                                                    <div class="pie-chart-center-label">Total Loan</div>
+                                                </div>
+                                            </div>
+                                            <div class="pie-chart-legend">
+                                                <div class="legend-item">
+                                                    <span class="legend-color legend-remaining"></span>
+                                                    <span class="legend-label">Principal Remaining: {formattedTotalPrincipalRemaining}</span>
+                                                </div>
+                                                <div class="legend-item">
+                                                    <span class="legend-color legend-paid"></span>
+                                                    <span class="legend-label">Total Loan Amount: {formattedTotalLoanAmount}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="slds-col slds-size_1-of-2">
+                                    <div class="chart-card">
+                                        <h3 class="slds-text-heading_small slds-m-bottom_small">Payment Status</h3>
+                                        <div class="chart-container">
+                                            <div class="pie-chart-wrapper">
+                                                <svg class="pie-chart" viewBox="0 0 200 200">
+                                                    <circle class="pie-chart-background" cx="100" cy="100" r="90"></circle>
+                                                    <path class="pie-segment pie-segment-billed" d={paymentStatusBilledPath}></path>
+                                                    <path class="pie-segment pie-segment-delinquent" d={paymentStatusDelinquentPath}></path>
+                                                </svg>
+                                                <div class="pie-chart-center">
+                                                    <div class="pie-chart-center-value">{formattedTotalBilledAmount}</div>
+                                                    <div class="pie-chart-center-label">Total Billed</div>
+                                                </div>
+                                            </div>
+                                            <div class="pie-chart-legend">
+                                                <div class="legend-item">
+                                                    <span class="legend-color legend-billed"></span>
+                                                    <span class="legend-label">Billed: {formattedTotalBilledAmount}</span>
+                                                </div>
+                                                <div class="legend-item">
+                                                    <span class="legend-color legend-delinquent"></span>
+                                                    <span class="legend-label">Delinquent: {formattedTotalDelinquentAmount}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Calculated Fields Section -->
+                        <div class="slds-grid slds-gutters slds-m-top_medium calculated-fields-section">
+                            <div class="slds-col slds-size_1-of-3">
+                                <div class="calculated-field-card">
+                                    <div class="slds-text-body_small calculated-field-label">Total Loan Amount</div>
+                                    <div class="slds-text-heading_medium calculated-field-value">{formattedTotalLoanAmount}</div>
+                                </div>
+                            </div>
+                            <div class="slds-col slds-size_1-of-3">
+                                <div class="calculated-field-card">
+                                    <div class="slds-text-body_small calculated-field-label">Total Principal Remaining</div>
+                                    <div class="slds-text-heading_medium calculated-field-value">{formattedTotalPrincipalRemaining}</div>
+                                </div>
+                            </div>
+                            <div class="slds-col slds-size_1-of-3">
+                                <div class="calculated-field-card calculated-field-card-warning">
+                                    <div class="slds-text-body_small calculated-field-label">Total Delinquent Amount</div>
+                                    <div class="slds-text-heading_medium calculated-field-value">{formattedTotalDelinquentAmount}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- Summary Cards -->
+        <template if:true={customerSummary}>
+            <div class="summary-cards-container">
+                <div class="slds-grid slds-gutters">
+                <div class="slds-col slds-size_1-of-7">
+                    <div class={totalLoansCardClass} data-filter="all" onclick={handleFilterClick}>
+                        <div class="slds-text-align_center">
+                            <lightning-icon icon-name="standard:orders" size="small" class="slds-m-bottom_x-small"></lightning-icon>
+                            <div class="slds-text-heading_large">{totalLoans}</div>
+                            <div class="slds-text-body_small slds-text-color_weak">Total Loans</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="slds-col slds-size_1-of-7">
+                    <div class={activeLoansCardClass} data-filter="active" onclick={handleFilterClick}>
+                        <div class="slds-text-align_center">
+                            <lightning-icon icon-name="utility:success" size="small" class="slds-m-bottom_x-small"></lightning-icon>
+                            <div class="slds-text-heading_large">{activeLoans}</div>
+                            <div class="slds-text-body_small slds-text-color_weak">Active Loans</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="slds-col slds-size_1-of-7">
+                    <div class={closedLoansCardClass} data-filter="closed" onclick={handleFilterClick}>
+                        <div class="slds-text-align_center">
+                            <lightning-icon icon-name="utility:lock" size="small" class="slds-m-bottom_x-small"></lightning-icon>
+                            <div class="slds-text-heading_large">{closedLoans}</div>
+                            <div class="slds-text-body_small slds-text-color_weak">Closed Loans</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="slds-col slds-size_1-of-7">
+                    <div class={goodStandingCardClass} data-filter="goodStanding" onclick={handleFilterClick}>
+                        <div class="slds-text-align_center">
+                            <lightning-icon icon-name="utility:like" size="small" class="slds-m-bottom_x-small"></lightning-icon>
+                            <div class="slds-text-heading_large">{activeGoodStanding}</div>
+                            <div class="slds-text-body_small slds-text-color_weak">Good Standing</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="slds-col slds-size_1-of-7">
+                    <div class={badStandingCardClass} data-filter="badStanding" onclick={handleFilterClick}>
+                        <div class="slds-text-align_center">
+                            <lightning-icon icon-name="utility:warning" size="small" class="slds-m-bottom_x-small"></lightning-icon>
+                            <div class="slds-text-heading_large">{activeBadStanding}</div>
+                            <div class="slds-text-body_small slds-text-color_weak">Bad Standing</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="slds-col slds-size_1-of-7">
+                    <div class="slds-box summary-card">
+                        <div class="slds-text-align_center">
+                            <lightning-icon icon-name="utility:trending" size="small" class="slds-m-bottom_x-small"></lightning-icon>
+                            <div class="slds-text-heading_large">{formattedLTVRatio}</div>
+                            <div class="slds-text-body_small slds-text-color_weak">LTV Ratio</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="slds-col slds-size_1-of-7">
+                    <div class="slds-box summary-card">
+                        <div class="slds-text-align_center">
+                            <lightning-icon icon-name="utility:chart" size="small" class="slds-m-bottom_x-small"></lightning-icon>
+                            <div class="slds-text-heading_large">{formattedDebtRatio}</div>
+                            <div class="slds-text-body_small slds-text-color_weak">Debt Ratio</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </div>
+
+            <!-- Loan Accounts Section -->
+            <div class="loan-accounts-section">
+                <div class="loan-accounts-header">
+                    <h3 class="slds-text-heading_medium">
+                        Loan Accounts 
+                        <span class="slds-badge slds-badge_inverse">{filteredLoanCount}</span>
+                        <template if:true={isFiltered}>
+                            <span class="slds-text-body_small slds-m-left_small slds-text-color_weak">
+                                (Filtered: {filterLabel})
+                            </span>
+                        </template>
+                    </h3>
+                </div>
+                
+                <div class="loan-accounts-content">
+                    <template if:true={isLoading}>
+                        <div class="slds-text-align_center slds-p-around_large">
+                            <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+                        </div>
+                    </template>
+
+                    <template if:false={isLoading}>
+                        <template if:true={filteredLoanAccounts.length}>
+                            <template for:each={filteredLoanAccounts} for:item="loan">
+                                <c-loan-account-card 
+                                    key={loan.loanAccountId}
+                                    loan-data={loan}
+                                    onloanexpand={handleLoanExpand}>
+                                </c-loan-account-card>
+                            </template>
+                        </template>
+                        <template if:false={filteredLoanAccounts.length}>
+                            <div class="slds-box slds-theme_info slds-text-align_center slds-p-around_medium">
+                                <p class="slds-text-body_regular">No loans match the selected filter.</p>
+                            </div>
+                        </template>
+                    </template>
+                </div>
+            </div>
+        </template>
+        </lightning-card>
+    </div>
+</template>
+

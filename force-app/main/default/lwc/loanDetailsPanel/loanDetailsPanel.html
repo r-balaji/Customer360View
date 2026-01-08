@@ -1,0 +1,288 @@
+<template>
+    <div class="loan-details-panel">
+        <!-- Tabs -->
+        <ul class="slds-tabs_default__nav" role="tablist">
+            <li class="slds-tabs_default__item" title="Overview" role="presentation">
+                <a class={overviewTabClass}
+                   href="javascript:void(0);" 
+                   role="tab"
+                   data-tab="overview"
+                   onclick={handleTabClick}>
+                    Overview
+                </a>
+            </li>
+            <li class="slds-tabs_default__item" title="Payment Schedule" role="presentation">
+                <a class={scheduleTabClass}
+                   href="javascript:void(0);" 
+                   role="tab"
+                   data-tab="schedule"
+                   onclick={handleTabClick}>
+                    Payment Schedule
+                </a>
+            </li>
+            <li class="slds-tabs_default__item" title="Transactions" role="presentation">
+                <a class={transactionsTabClass}
+                   href="javascript:void(0);" 
+                   role="tab"
+                   data-tab="transactions"
+                   onclick={handleTabClick}>
+                    Transactions
+                </a>
+            </li>
+            <li class="slds-tabs_default__item" title="Dues & Charges" role="presentation">
+                <a class={duesTabClass}
+                   href="javascript:void(0);" 
+                   role="tab"
+                   data-tab="dues"
+                   onclick={handleTabClick}>
+                    Dues & Charges
+                </a>
+            </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="slds-tabs_default__content">
+            <!-- Overview Tab -->
+            <template if:true={isOverviewActive}>
+                <div class="slds-tabs_default__panel" role="tabpanel">
+                    <div class="slds-grid slds-gutters slds-m-around_medium">
+                        <!-- Contract Details -->
+                        <div class="slds-col slds-size_1-of-2">
+                            <div class="slds-box">
+                                <h3 class="slds-text-heading_small slds-m-bottom_small">Contract Details</h3>
+                                <dl class="slds-list_horizontal slds-wrap">
+                                    <dt class="slds-item_label slds-text-color_weak">Loan Account #:</dt>
+                                    <dd class="slds-item_detail">{loanDetails.loanNumber}</dd>
+                                    
+                                    <dt class="slds-item_label slds-text-color_weak">Status:</dt>
+                                    <dd class="slds-item_detail">{overview.status}</dd>
+                                    
+                                    <dt class="slds-item_label slds-text-color_weak">Product Type:</dt>
+                                    <dd class="slds-item_detail">{overview.productType}</dd>
+                                    
+                                    <dt class="slds-item_label slds-text-color_weak">Loan Effective Date:</dt>
+                                    <dd class="slds-item_detail">{overview.formattedLoanEffectiveDate}</dd>
+                                    
+                                    <dt class="slds-item_label slds-text-color_weak">Maturity Date:</dt>
+                                    <dd class="slds-item_detail">{overview.formattedMaturityDate}</dd>
+                                    
+                                    <dt class="slds-item_label slds-text-color_weak">Closed Date:</dt>
+                                    <dd class="slds-item_detail">{formattedClosedDate}</dd>
+                                    
+                                    <dt class="slds-item_label slds-text-color_weak">Branch:</dt>
+                                    <dd class="slds-item_detail">{overview.branch}</dd>
+                                    
+                                    <dt class="slds-item_label slds-text-color_weak">Loan Officer:</dt>
+                                    <dd class="slds-item_detail">{overview.loanOfficer}</dd>
+                                    
+                                    <dt class="slds-item_label slds-text-color_weak">Payment Term:</dt>
+                                    <dd class="slds-item_detail">{overview.paymentTerm} months</dd>
+                                </dl>
+                            </div>
+                        </div>
+
+                        <!-- Financial Summary -->
+                        <div class="slds-col slds-size_1-of-2">
+                            <div class="slds-box">
+                                <h3 class="slds-text-heading_small slds-m-bottom_small">Financial Summary</h3>
+                                <dl class="slds-list_horizontal slds-wrap">
+                                    <dt class="slds-item_label slds-text-color_weak">Original Loan Amount:</dt>
+                                    <dd class="slds-item_detail">{overview.formattedLoanAmount}</dd>
+                                    
+                                    <dt class="slds-item_label slds-text-color_weak">Principal Remaining:</dt>
+                                    <dd class="slds-item_detail">{overview.formattedPrincipalRemaining}</dd>
+                                    
+                                    <dt class="slds-item_label slds-text-color_weak">Interest Remaining:</dt>
+                                    <dd class="slds-item_detail">{overview.formattedInterestRemaining}</dd>
+                                    
+                                    <dt class="slds-item_label slds-text-color_weak">Fees Remaining:</dt>
+                                    <dd class="slds-item_detail">{overview.formattedFeesRemaining}</dd>
+                                    
+                                    <dt class="slds-item_label slds-text-heading_small">Total Outstanding:</dt>
+                                    <dd class="slds-item_detail slds-text-heading_small">{overview.formattedTotalOutstanding}</dd>
+                                    
+                                    <dt class="slds-item_label slds-text-color_weak">Total Paid to Date:</dt>
+                                    <dd class="slds-item_detail">{overview.formattedTotalPaidToDate}</dd>
+                                    
+                                    <dt class="slds-item_label slds-text-color_weak">Interest Rate (APR):</dt>
+                                    <dd class="slds-item_detail">{overview.apr}%</dd>
+                                    
+                                    <dt class="slds-item_label slds-text-color_weak">Payment Frequency:</dt>
+                                    <dd class="slds-item_detail">{overview.paymentFrequency}</dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Progress -->
+                    <div class="slds-box slds-m-around_medium">
+                        <h3 class="slds-text-heading_small slds-m-bottom_small">Payment Progress</h3>
+                        <div class="slds-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow={overview.progressPercentage}>
+                            <span class="slds-progress-bar__value" style={progressBarStyle}></span>
+                        </div>
+                        <div class="slds-grid slds-gutters slds-m-top_small">
+                            <div class="slds-col">
+                                <span class="slds-text-body_small">Payments Made: {overview.paymentsMade} of {overview.paymentTerm} installments</span>
+                            </div>
+                            <div class="slds-col">
+                                <span class="slds-text-body_small">Next Payment Due: {overview.formattedNextPaymentDate} ({overview.formattedNextPaymentAmount})</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <!-- Payment Schedule Tab -->
+            <template if:true={isScheduleActive}>
+                <div class="slds-tabs_default__panel" role="tabpanel">
+                    <template if:true={paymentSchedule}>
+                        <div class="slds-m-around_medium">
+                            <div class="slds-text-body_small slds-m-bottom_small">
+                                Summary: {paymentSchedule.paidInstallments} Paid | 
+                                {paymentSchedule.pastDueInstallments} Past Due | 
+                                {paymentSchedule.pendingInstallments} Pending
+                            </div>
+                            
+                            <table class="slds-table slds-table_cell-buffer slds-table_bordered">
+                                <thead>
+                                    <tr class="slds-line-height_reset">
+                                        <th scope="col">Installment</th>
+                                        <th scope="col">Due Date</th>
+                                        <th scope="col">Principal</th>
+                                        <th scope="col">Interest</th>
+                                        <th scope="col">Fees</th>
+                                        <th scope="col">Total</th>
+                                        <th scope="col">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template for:each={paymentSchedule.installments} for:item="installment">
+                                        <tr key={installment.installmentNumber}>
+                                            <td>{installment.installmentNumber}</td>
+                                            <td>{installment.formattedDueDate}</td>
+                                            <td>{installment.formattedPrincipalDue}</td>
+                                            <td>{installment.formattedInterestDue}</td>
+                                            <td>{installment.formattedFeesDue}</td>
+                                            <td>{installment.formattedTotalDue}</td>
+                                            <td>
+                                                <span class={installment.statusBadgeClass}>
+                                                    {installment.status}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                    </template>
+                </div>
+            </template>
+
+            <!-- Transactions Tab -->
+            <template if:true={isTransactionsActive}>
+                <div class="slds-tabs_default__panel" role="tabpanel">
+                    <template if:true={transactions}>
+                        <div class="slds-m-around_medium">
+                            <div class="slds-text-body_small slds-m-bottom_small">
+                                Total Transactions: {transactions.totalTransactions} | 
+                                Total Amount: {transactions.formattedTotalAmount}
+                            </div>
+                            
+                            <table class="slds-table slds-table_cell-buffer slds-table_bordered">
+                                <thead>
+                                    <tr class="slds-line-height_reset">
+                                        <th scope="col">Date</th>
+                                        <th scope="col">Amount</th>
+                                        <th scope="col">Principal</th>
+                                        <th scope="col">Interest</th>
+                                        <th scope="col">Fees</th>
+                                        <th scope="col">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template for:each={transactions.transactions} for:item="transaction">
+                                        <tr key={transaction.transactionId}>
+                                            <td>{transaction.formattedTransactionDate}</td>
+                                            <td>{transaction.formattedAmount}</td>
+                                            <td>{transaction.formattedPrincipalApplied}</td>
+                                            <td>{transaction.formattedInterestApplied}</td>
+                                            <td>{transaction.formattedFeesApplied}</td>
+                                            <td>{transaction.status}</td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                    </template>
+                </div>
+            </template>
+
+            <!-- Dues & Charges Tab -->
+            <template if:true={isDuesActive}>
+                <div class="slds-tabs_default__panel" role="tabpanel">
+                    <template if:true={duesAndCharges}>
+                        <div class="slds-grid slds-gutters slds-m-around_medium">
+                            <!-- Current Dues -->
+                            <div class="slds-col slds-size_1-of-2">
+                                <div class="slds-box">
+                                    <h3 class="slds-text-heading_small slds-m-bottom_small">Current Dues Summary</h3>
+                                    <dl class="slds-list_horizontal slds-wrap">
+                                        <dt class="slds-item_label slds-text-color_weak">Principal Due:</dt>
+                                        <dd class="slds-item_detail">{duesAndCharges.currentDues.formattedPrincipalDue}</dd>
+                                        
+                                        <dt class="slds-item_label slds-text-color_weak">Interest Due:</dt>
+                                        <dd class="slds-item_detail">{duesAndCharges.currentDues.formattedInterestDue}</dd>
+                                        
+                                        <dt class="slds-item_label slds-text-color_weak">Fees Due:</dt>
+                                        <dd class="slds-item_detail">{duesAndCharges.currentDues.formattedFeesDue}</dd>
+                                        
+                                        <dt class="slds-item_label slds-text-heading_small">Total Due:</dt>
+                                        <dd class="slds-item_detail slds-text-heading_small">{duesAndCharges.currentDues.formattedTotalDue}</dd>
+                                        
+                                        <dt class="slds-item_label slds-text-color_weak">Days Past Due:</dt>
+                                        <dd class="slds-item_detail">
+                                            <span class="slds-badge slds-badge_warning">
+                                                {duesAndCharges.currentDues.daysPastDue} days
+                                            </span>
+                                        </dd>
+                                        
+                                        <dt class="slds-item_label slds-text-color_weak">Next Payment Date:</dt>
+                                        <dd class="slds-item_detail">{duesAndCharges.currentDues.formattedNextPaymentDate}</dd>
+                                    </dl>
+                                </div>
+                            </div>
+
+                            <!-- Fees & Charges -->
+                            <div class="slds-col slds-size_1-of-2">
+                                <div class="slds-box">
+                                    <h3 class="slds-text-heading_small slds-m-bottom_small">Fee Details</h3>
+                                    <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_compact">
+                                        <thead>
+                                            <tr>
+                                                <th>Fee Type</th>
+                                                <th>Amount</th>
+                                                <th>Due Date</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <template for:each={duesAndCharges.fees} for:item="fee">
+                                                <tr key={fee.feeId}>
+                                                    <td>{fee.feeType}</td>
+                                                    <td>{fee.formattedAmount}</td>
+                                                    <td>{fee.formattedDueDate}</td>
+                                                    <td>{fee.status}</td>
+                                                </tr>
+                                            </template>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </template>
+        </div>
+    </div>
+</template>
+

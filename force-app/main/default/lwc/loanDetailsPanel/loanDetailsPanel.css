@@ -1,0 +1,122 @@
+/* Loan Details Panel - Professional Enterprise Styling */
+.loan-details-panel {
+    margin-top: 1rem;
+    background: #FFFFFF;
+    border: 1px solid #DDDBDA;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+/* Tab Navigation Styling */
+.loan-details-panel .slds-tabs_default {
+    border-bottom: 1px solid #DDDBDA;
+}
+
+.loan-details-panel .slds-tabs_default__item {
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
+    color: #706E6B;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.loan-details-panel .slds-tabs_default__item:hover {
+    color: #0176D3;
+    background-color: #F8F9FA;
+}
+
+.loan-details-panel .slds-tabs_default__item.slds-is-active {
+    color: #0176D3;
+    border-bottom-color: #0176D3;
+    background-color: transparent;
+}
+
+/* Tab Content Styling */
+.loan-details-panel .slds-tabs_default__content {
+    padding: 1.5rem 0;
+}
+
+/* Table Styling */
+.loan-details-panel .slds-table {
+    border: 1px solid #DDDBDA;
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+.loan-details-panel .slds-table thead th {
+    background: #F8F9FA;
+    border-bottom: 2px solid #DDDBDA;
+    font-weight: 600;
+    color: #181818;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+    padding: 0.75rem 1rem;
+}
+
+.loan-details-panel .slds-table tbody tr {
+    border-bottom: 1px solid #F3F2F2;
+    transition: background-color 0.2s ease;
+}
+
+.loan-details-panel .slds-table tbody tr:hover {
+    background-color: #F8F9FA;
+}
+
+.loan-details-panel .slds-table tbody td {
+    padding: 0.75rem 1rem;
+    color: #181818;
+}
+
+/* Overview Section */
+.loan-details-panel .overview-section {
+    background: #F8F9FA;
+    border: 1px solid #DDDBDA;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.loan-details-panel .overview-item {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #E5E5E5;
+}
+
+.loan-details-panel .overview-item:last-child {
+    border-bottom: none;
+}
+
+.loan-details-panel .overview-label {
+    color: #706E6B;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 500;
+}
+
+.loan-details-panel .overview-value {
+    color: #181818;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-top: 0.25rem;
+}
+
+/* Status Badge Styling in Loan Details Panel */
+.loan-details-panel .status-badge-good-standing {
+    background-color: #2E844A;
+    color: #FFFFFF;
+    border: 1px solid #2E844A;
+    font-weight: 500;
+    padding: 0.25rem 0.75rem;
+    border-radius: 0.25rem;
+}
+
+.loan-details-panel .status-badge-bad-standing {
+    background-color: #C23934;
+    color: #FFFFFF;
+    border: 1px solid #C23934;
+    font-weight: 500;
+    padding: 0.25rem 0.75rem;
+    border-radius: 0.25rem;
+}
