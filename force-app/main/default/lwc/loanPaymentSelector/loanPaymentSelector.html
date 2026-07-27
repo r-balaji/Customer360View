@@ -1,0 +1,341 @@
+<template>
+    <lightning-card title={cardTitle} icon-name={cardIcon}>
+        <div class="slds-m-around_medium">
+            <!-- Account Lookup Field (Disabled) -->
+            <div class="slds-m-bottom_medium">
+                <lightning-input
+                    label="Account"
+                    value={accountName}
+                    disabled
+                    type="text"
+                    class="account-lookup-field">
+                </lightning-input>
+            </div>
+
+            <!-- Error if no account -->
+            <template if:false={hasAccountId}>
+                <div class="slds-box slds-theme_error slds-text-align_center slds-p-around_medium">
+                    <lightning-icon icon-name="utility:error" size="small" class="slds-m-right_x-small"></lightning-icon>
+                    <span class="slds-text-body_regular">Account ID is required. Please provide an account ID.</span>
+                </div>
+            </template>
+
+            <!-- Loan Selection -->
+            <template if:true={hasAccountId}>
+                <div class="slds-text-body_regular slds-m-bottom_medium">
+                    {instructionText}
+                </div>
+
+                <!-- Reusable Loan List Component -->
+                <c-loan-list
+                    account-id={effectiveAccountId}
+                    show-selection
+                    selection-mode="single"
+                    filter-active-only
+                    onselectionchange={handleSelectionChange}>
+                </c-loan-list>
+
+                <div class="slds-m-top_large slds-text-align_right">
+                    <!-- Pay Button for Take Payment action -->
+                    <template if:true={isTakePaymentAction}>
+                        <lightning-button
+                            label={actionButtonLabel}
+                            variant="brand"
+                            onclick={handlePay}
+                            disabled={isPayDisabled}
+                            class="pay-button">
+                        </lightning-button>
+                    </template>
+
+                    <!-- List Payment Transaction Button for Reverse Payment action -->
+                    <template if:true={isReversePaymentAction}>
+                        <template if:false={showTransactions}>
+                            <lightning-button
+                                label={actionButtonLabel}
+                                variant="brand"
+                                onclick={handleListPaymentTransaction}
+                                disabled={isListPaymentTransactionDisabled}
+                                class="pay-button">
+                            </lightning-button>
+                        </template>
+                    </template>
+
+                    <!-- List Charges Button for Waive Fee action -->
+                    <template if:true={isWaiveFeeAction}>
+                        <lightning-button
+                            label={actionButtonLabel}
+                            variant="brand"
+                            onclick={handleListCharges}
+                            disabled={isListChargesDisabled}
+                            class="pay-button">
+                        </lightning-button>
+                    </template>
+
+                    <!-- Setup Promise to Pay Button for Promise to Pay action -->
+                    <template if:true={isPromiseToPayAction}>
+                        <lightning-button
+                            label={actionButtonLabel}
+                            variant="brand"
+                            onclick={handlePromiseToPay}
+                            disabled={isPromiseToPayDisabled}
+                            class="pay-button">
+                        </lightning-button>
+                    </template>
+                    <!-- Generate Payoff Quote Button for Generate Payoff Quote action -->
+                    <template if:true={isGeneratePayoffQuoteAction}>
+                        <lightning-button
+                            label={actionButtonLabel}
+                            variant="brand"
+                            onclick={handleGeneratePayoffQuote}
+                            disabled={isGeneratePayoffQuoteDisabled}
+                            class="pay-button">
+                        </lightning-button>
+                    </template>
+                    <!-- Change Due Day Button for Change Due Day action -->
+                    <template if:true={isChangeDueDayAction}>
+                        <lightning-button
+                            label={actionButtonLabel}
+                            variant="brand"
+                            onclick={handleChangeDueDay}
+                            disabled={isChangeDueDayDisabled}
+                            class="pay-button">
+                        </lightning-button>
+                    </template>
+                </div>
+
+                <!-- Payment Transactions Section (for Reverse Payment action) -->
+                <template if:true={showTransactions}>
+                    <div class="slds-m-top_large slds-border_top">
+                        <h3 class="slds-text-heading_small slds-m-top_medium slds-m-bottom_small">
+                            Recent Payment Transactions
+                        </h3>
+
+                        <template if:true={isLoadingTransactions}>
+                            <div class="slds-text-align_center slds-p-around_medium">
+                                <lightning-spinner alternative-text="Loading"></lightning-spinner>
+                            </div>
+                        </template>
+
+                        <template if:false={isLoadingTransactions}>
+                            <template if:true={hasTransactions}>
+                                <div class="slds-scrollable_y" style="max-height: 400px;">
+                                    <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_striped">
+                                        <thead>
+                                            <tr class="slds-line-height_reset">
+                                                <th scope="col" style="width: 3rem;">
+                                                    <span class="slds-assistive-text">Select</span>
+                                                </th>
+                                                <th scope="col">
+                                                    <div class="slds-truncate" title="Transaction ID">Transaction ID</div>
+                                                </th>
+                                                <th scope="col">
+                                                    <div class="slds-truncate" title="Payment Mode">Payment Mode</div>
+                                                </th>
+                                                <th scope="col">
+                                                    <div class="slds-truncate" title="Transaction Date">Transaction Date</div>
+                                                </th>
+                                                <th scope="col">
+                                                    <div class="slds-truncate" title="Transaction Amount">Transaction Amount</div>
+                                                </th>
+                                                <th scope="col">
+                                                    <div class="slds-truncate" title="Principal">Principal</div>
+                                                </th>
+                                                <th scope="col">
+                                                    <div class="slds-truncate" title="Interest">Interest</div>
+                                                </th>
+                                                <th scope="col">
+                                                    <div class="slds-truncate" title="Fees">Fees</div>
+                                                </th>
+                                                <th scope="col">
+                                                    <div class="slds-truncate" title="Cleared">Cleared</div>
+                                                </th>
+                                                <th scope="col">
+                                                    <div class="slds-truncate" title="Reversed">Reversed</div>
+                                                </th>
+                                                <th scope="col">
+                                                    <div class="slds-truncate" title="Excess">Excess</div>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <template for:each={formattedTransactions} for:item="txn">
+                                                <tr key={txn.id} class="slds-hint-parent">
+                                                    <td data-label="Select">
+                                                        <lightning-input
+                                                            type="radio"
+                                                            name="transactionSelection"
+                                                            value={txn.id}
+                                                            checked={txn.isSelected}
+                                                            onchange={handleTransactionSelection}
+                                                            label="">
+                                                        </lightning-input>
+                                                    </td>
+                                                    <td data-label="Transaction ID">
+                                                        <div class="slds-truncate" title={txn.transactionId}>{txn.transactionId}</div>
+                                                    </td>
+                                                    <td data-label="Payment Mode">
+                                                        <div class="slds-truncate" title={txn.paymentMode}>{txn.paymentMode}</div>
+                                                    </td>
+                                                    <td data-label="Transaction Date">
+                                                        <div class="slds-truncate" title={txn.formattedTransactionDate}>{txn.formattedTransactionDate}</div>
+                                                    </td>
+                                                    <td data-label="Transaction Amount">
+                                                        <div class="slds-truncate" title={txn.formattedTransactionAmount}>{txn.formattedTransactionAmount}</div>
+                                                    </td>
+                                                    <td data-label="Principal">
+                                                        <div class="slds-truncate" title={txn.formattedPrincipal}>{txn.formattedPrincipal}</div>
+                                                    </td>
+                                                    <td data-label="Interest">
+                                                        <div class="slds-truncate" title={txn.formattedInterest}>{txn.formattedInterest}</div>
+                                                    </td>
+                                                    <td data-label="Fees">
+                                                        <div class="slds-truncate" title={txn.formattedFees}>{txn.formattedFees}</div>
+                                                    </td>
+                                                    <td data-label="Cleared">
+                                                        <div class="slds-truncate" title={txn.clearedText}>{txn.clearedText}</div>
+                                                    </td>
+                                                    <td data-label="Reversed">
+                                                        <div class="slds-truncate" title={txn.reversedText}>{txn.reversedText}</div>
+                                                    </td>
+                                                    <td data-label="Excess">
+                                                        <div class="slds-truncate" title={txn.formattedExcess}>{txn.formattedExcess}</div>
+                                                    </td>
+                                                </tr>
+                                            </template>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <div class="slds-m-top_medium slds-text-align_right">
+                                    <lightning-button
+                                        label="Reverse Payment"
+                                        variant="brand"
+                                        onclick={handleReversePayment}
+                                        disabled={isReversePaymentDisabled}
+                                        class="reverse-payment-button">
+                                    </lightning-button>
+                                </div>
+                            </template>
+
+                            <template if:false={hasTransactions}>
+                                <div class="slds-box slds-theme_warning slds-text-align_center slds-p-around_medium">
+                                    <lightning-icon icon-name="utility:warning" size="small" class="slds-m-right_x-small"></lightning-icon>
+                                    <div class="slds-text-body_regular slds-m-top_x-small">
+                                        <strong>No valid payment transactions available for reversal.</strong>
+                                        <div class="slds-text-body_small slds-m-top_x-small">
+                                            This loan does not have any non-reversed payment transactions that can be reversed.
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </template>
+                    </div>
+                </template>
+
+                <!-- Charges Section (for Waive Fee action) -->
+                <template if:true={showCharges}>
+                    <div class="slds-m-top_large slds-border_top">
+                        <h3 class="slds-text-heading_small slds-m-top_medium slds-m-bottom_small">
+                            Unpaid Charges
+                        </h3>
+
+                        <template if:true={isLoadingCharges}>
+                            <div class="slds-text-align_center slds-p-around_medium">
+                                <lightning-spinner alternative-text="Loading"></lightning-spinner>
+                            </div>
+                        </template>
+
+                        <template if:false={isLoadingCharges}>
+                            <template if:true={hasCharges}>
+                                <div class="slds-scrollable_y" style="max-height: 400px;">
+                                    <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_striped">
+                                        <thead>
+                                            <tr class="slds-line-height_reset">
+                                                <th scope="col">
+                                                    <div class="slds-truncate" title="Charge Id">Charge Id</div>
+                                                </th>
+                                                <th scope="col">
+                                                    <div class="slds-truncate" title="Created Date">Created Date</div>
+                                                </th>
+                                                <th scope="col">
+                                                    <div class="slds-truncate" title="Date">Date</div>
+                                                </th>
+                                                <th scope="col">
+                                                    <div class="slds-truncate" title="Fee">Fee</div>
+                                                </th>
+                                                <th scope="col">
+                                                    <div class="slds-truncate" title="Total Amount Due">Total Amount Due</div>
+                                                </th>
+                                                <th scope="col">
+                                                    <div class="slds-truncate" title="Paid Amount">Paid Amount</div>
+                                                </th>
+                                                <th scope="col">
+                                                    <div class="slds-truncate" title="Paid">Paid</div>
+                                                </th>
+                                                <th scope="col">
+                                                    <div class="slds-truncate" title="Waived">Waived</div>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <template for:each={formattedCharges} for:item="charge">
+                                                <tr key={charge.id} class="slds-hint-parent">
+                                                    <td data-label="Charge Id">
+                                                        <div class="slds-truncate" title={charge.chargeId}>{charge.chargeId}</div>
+                                                    </td>
+                                                    <td data-label="Created Date">
+                                                        <div class="slds-truncate" title={charge.formattedCreatedDate}>{charge.formattedCreatedDate}</div>
+                                                    </td>
+                                                    <td data-label="Date">
+                                                        <div class="slds-truncate" title={charge.formattedChargeDate}>{charge.formattedChargeDate}</div>
+                                                    </td>
+                                                    <td data-label="Fee">
+                                                        <div class="slds-truncate" title={charge.chargeType}>{charge.chargeType}</div>
+                                                    </td>
+                                                    <td data-label="Total Amount Due">
+                                                        <div class="slds-truncate" title={charge.formattedTotalAmountDue}>{charge.formattedTotalAmountDue}</div>
+                                                    </td>
+                                                    <td data-label="Paid Amount">
+                                                        <div class="slds-truncate" title={charge.formattedPaidAmount}>{charge.formattedPaidAmount}</div>
+                                                    </td>
+                                                    <td data-label="Paid">
+                                                        <div class="slds-truncate" title={charge.paidText}>{charge.paidText}</div>
+                                                    </td>
+                                                    <td data-label="Waived">
+                                                        <div class="slds-truncate" title={charge.waivedText}>{charge.waivedText}</div>
+                                                    </td>
+                                                </tr>
+                                            </template>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <div class="slds-m-top_medium slds-text-align_right">
+                                    <lightning-button
+                                        label="Waive Fee"
+                                        variant="brand"
+                                        onclick={handleWaiveFee}
+                                        disabled={isWaiveFeeDisabled}
+                                        class="waive-fee-button">
+                                    </lightning-button>
+                                </div>
+                            </template>
+
+                            <template if:false={hasCharges}>
+                                <div class="slds-box slds-theme_warning slds-text-align_center slds-p-around_medium">
+                                    <lightning-icon icon-name="utility:warning" size="small" class="slds-m-right_x-small"></lightning-icon>
+                                    <div class="slds-text-body_regular slds-m-top_x-small">
+                                        <strong>No valid charges available to waive.</strong>
+                                        <div class="slds-text-body_small slds-m-top_x-small">
+                                            This loan does not have any unpaid charges that can be waived.
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </template>
+                    </div>
+                </template>
+            </template>
+        </div>
+    </lightning-card>
+</template>

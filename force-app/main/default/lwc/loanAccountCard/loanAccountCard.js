@@ -27,7 +27,7 @@ export default class LoanAccountCard extends LightningElement {
     get loanRecordUrl() {
         if (this.loanData?.loanAccountId) {
             const baseUrl = window.location.origin;
-            return `${baseUrl}/lightning/r/loan__Loan_Account__c/${this.loanData.loanAccountId}/view`;
+            return `${baseUrl}/lightning/r/Loan_Account__c/${this.loanData.loanAccountId}/view`;
         }
         return '#';
     }
@@ -37,7 +37,7 @@ export default class LoanAccountCard extends LightningElement {
         event.preventDefault();
         if (this.loanData?.loanAccountId) {
             const baseUrl = window.location.origin;
-            const recordUrl = `${baseUrl}/lightning/r/loan__Loan_Account__c/${this.loanData.loanAccountId}/view`;
+            const recordUrl = `${baseUrl}/lightning/r/Loan_Account__c/${this.loanData.loanAccountId}/view`;
             window.open(recordUrl, '_blank');
         }
     }
@@ -81,32 +81,20 @@ export default class LoanAccountCard extends LightningElement {
     }
 
     get formattedLoanEffectiveDate() {
-        if (!this.loanData?.loanEffectiveDate) return '';
-        const date = new Date(this.loanData.loanEffectiveDate);
-        return date.toLocaleDateString('en-US', { 
-            year: 'numeric', 
-            month: 'short', 
-            day: 'numeric' 
-        });
+        return this.formatDate(this.loanData?.loanEffectiveDate);
     }
 
     get formattedNextPaymentDate() {
-        if (!this.loanData?.nextPaymentDate) return '';
-        const date = new Date(this.loanData.nextPaymentDate);
-        return date.toLocaleDateString('en-US', { 
-            year: 'numeric', 
-            month: 'short', 
-            day: 'numeric' 
-        });
+        return this.formatDate(this.loanData?.nextPaymentDate);
     }
 
     handleToggleExpand() {
         this.isExpanded = !this.isExpanded;
-        
+
         if (this.isExpanded && !this.loanDetails) {
             this.loadLoanDetails();
         }
-        
+
         // Dispatch event to parent
         this.dispatchEvent(new CustomEvent('loanexpand', {
             detail: {
@@ -122,7 +110,7 @@ export default class LoanAccountCard extends LightningElement {
         }
 
         this.isLoading = true;
-        
+
         getLoanDetails({ loanAccountId: this.loanData.loanAccountId })
             .then(result => {
                 // Format the data to avoid function calls in templates
@@ -147,22 +135,40 @@ export default class LoanAccountCard extends LightningElement {
         }).format(value);
     }
 
-    formatDate(dateString) {
-        if (!dateString) return '';
-        const date = new Date(dateString);
-        return date.toLocaleDateString('en-US', { 
-            year: 'numeric', 
-            month: 'short', 
-            day: 'numeric' 
+    formatDate(dateValue) {
+        if (!dateValue) return '';
+
+        const rawDate = String(dateValue);
+        const dateOnlyMatch = rawDate.match(/^(\d{4})-(\d{2})-(\d{2})(?:$|T|\s)/);
+        if (dateOnlyMatch) {
+            const year = Number(dateOnlyMatch[1]);
+            const month = Number(dateOnlyMatch[2]) - 1;
+            const day = Number(dateOnlyMatch[3]);
+            return this.formatDateObject(new Date(year, month, day));
+        }
+
+        const date = new Date(dateValue);
+        if (Number.isNaN(date.getTime())) {
+            return rawDate;
+        }
+
+        return this.formatDateObject(date);
+    }
+
+    formatDateObject(date) {
+        return date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
         });
     }
 
     formatLoanDetails(details) {
         if (!details) return null;
-        
+
         // Deep clone to avoid mutating original
         const formatted = JSON.parse(JSON.stringify(details));
-        
+
         // Format overview dates and currency
         if (formatted.overview) {
             formatted.overview.formattedLoanEffectiveDate = this.formatDate(formatted.overview.loanEffectiveDate);
@@ -177,7 +183,7 @@ export default class LoanAccountCard extends LightningElement {
             formatted.overview.formattedTotalPaidToDate = this.formatCurrency(formatted.overview.totalPaidToDate);
             formatted.overview.formattedNextPaymentAmount = this.formatCurrency(formatted.overview.nextPaymentAmount);
         }
-        
+
         // Format payment schedule installments
         if (formatted.paymentSchedule && formatted.paymentSchedule.installments) {
             formatted.paymentSchedule.installments = formatted.paymentSchedule.installments.map(inst => ({
@@ -192,7 +198,7 @@ export default class LoanAccountCard extends LightningElement {
                 statusBadgeClass: this.getStatusBadgeClass(inst.status)
             }));
         }
-        
+
         // Format transactions
         if (formatted.transactions && formatted.transactions.transactions) {
             formatted.transactions.formattedTotalAmount = this.formatCurrency(formatted.transactions.totalAmount);
@@ -205,35 +211,56 @@ export default class LoanAccountCard extends LightningElement {
                 formattedFeesApplied: this.formatCurrency(trans.feesApplied)
             }));
         }
-        
+
         // Format dues and charges
         if (formatted.duesAndCharges) {
-            if (formatted.duesAndCharges.currentDues) {
-                formatted.duesAndCharges.currentDues.formattedPrincipalDue = this.formatCurrency(formatted.duesAndCharges.currentDues.principalDue);
-                formatted.duesAndCharges.currentDues.formattedInterestDue = this.formatCurrency(formatted.duesAndCharges.currentDues.interestDue);
-                formatted.duesAndCharges.currentDues.formattedFeesDue = this.formatCurrency(formatted.duesAndCharges.currentDues.feesDue);
-                formatted.duesAndCharges.currentDues.formattedTotalDue = this.formatCurrency(formatted.duesAndCharges.currentDues.totalDue);
-                formatted.duesAndCharges.currentDues.formattedNextPaymentDate = this.formatDate(formatted.duesAndCharges.currentDues.nextPaymentDate);
-            }
-            
-            if (formatted.duesAndCharges.fees) {
-                formatted.duesAndCharges.fees = formatted.duesAndCharges.fees.map(fee => ({
-                    ...fee,
-                    formattedAmount: this.formatCurrency(fee.amount),
-                    formattedDueDate: this.formatDate(fee.dueDate),
-                    formattedPaidDate: this.formatDate(fee.paidDate)
+            // Format bills
+            if (formatted.duesAndCharges.bills && Array.isArray(formatted.duesAndCharges.bills)) {
+                formatted.duesAndCharges.bills = formatted.duesAndCharges.bills.map(bill => ({
+                    ...bill,
+                    formattedDueDate: this.formatDate(bill.dueDate),
+                    formattedDueAmount: this.formatCurrency(bill.dueAmount),
+                    formattedPrincipalBilled: this.formatCurrency(bill.principalBilled),
+                    formattedInterestBilled: this.formatCurrency(bill.interestBilled),
+                    formattedFeesBilled: this.formatCurrency(bill.feesBilled),
+                    formattedPrincipalDue: this.formatCurrency(bill.principalDue),
+                    formattedInterestDue: this.formatCurrency(bill.interestDue),
+                    formattedFeesDue: this.formatCurrency(bill.feesDue),
+                    formattedPrincipalPaid: this.formatCurrency(bill.principalPaid),
+                    formattedInterestPaid: this.formatCurrency(bill.interestPaid),
+                    formattedFeesPaid: this.formatCurrency(bill.feesPaid)
                 }));
             }
-            
-            if (formatted.duesAndCharges.charges) {
+
+            // Format charges
+            if (formatted.duesAndCharges.charges && Array.isArray(formatted.duesAndCharges.charges)) {
                 formatted.duesAndCharges.charges = formatted.duesAndCharges.charges.map(charge => ({
                     ...charge,
                     formattedAmount: this.formatCurrency(charge.amount),
-                    formattedDate: this.formatDate(charge.chargeDate)
+                    formattedChargeDate: this.formatDate(charge.chargeDate)
                 }));
             }
+
+            // Format pending schedule
+            if (formatted.duesAndCharges.pendingSchedule && Array.isArray(formatted.duesAndCharges.pendingSchedule)) {
+                formatted.duesAndCharges.pendingSchedule = formatted.duesAndCharges.pendingSchedule.map(pending => ({
+                    ...pending,
+                    formattedDueDate: this.formatDate(pending.dueDate),
+                    formattedPrincipalDue: this.formatCurrency(pending.principalDue),
+                    formattedInterestDue: this.formatCurrency(pending.interestDue),
+                    formattedFeesDue: this.formatCurrency(pending.feesDue),
+                    formattedTotalDue: this.formatCurrency(pending.totalDue)
+                }));
+            }
+
+            // Format summary
+            if (formatted.duesAndCharges.summary) {
+                formatted.duesAndCharges.summary.formattedTotalBilledAmount = this.formatCurrency(formatted.duesAndCharges.summary.totalBilledAmount || 0);
+                formatted.duesAndCharges.summary.formattedTotalChargesAmount = this.formatCurrency(formatted.duesAndCharges.summary.totalChargesAmount || 0);
+                formatted.duesAndCharges.summary.formattedTotalPendingAmount = this.formatCurrency(formatted.duesAndCharges.summary.totalPendingAmount || 0);
+            }
         }
-        
+
         return formatted;
     }
 
@@ -246,4 +273,3 @@ export default class LoanAccountCard extends LightningElement {
         return 'slds-badge';
     }
 }
-

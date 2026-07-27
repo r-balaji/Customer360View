@@ -1,0 +1,224 @@
+<template>
+    <div class="application-details-panel">
+        <div class="application-panel-header">
+            <lightning-icon icon-name="standard:record" size="small"></lightning-icon>
+            <h3>{applicationTitle}</h3>
+        </div>
+
+        <ul class="slds-tabs_default__nav" role="tablist">
+            <li class="slds-tabs_default__item" role="presentation">
+                <button class={overviewTabClass} type="button" role="tab" data-tab="overview" onclick={handleTabClick}>
+                    Overview
+                </button>
+            </li>
+            <li class="slds-tabs_default__item" role="presentation">
+                <button class={partiesTabClass} type="button" role="tab" data-tab="parties" onclick={handleTabClick}>
+                    Parties
+                </button>
+            </li>
+            <li class="slds-tabs_default__item" role="presentation">
+                <button class={pricingTabClass} type="button" role="tab" data-tab="pricing" onclick={handleTabClick}>
+                    Selected Pricing
+                </button>
+            </li>
+            <li class="slds-tabs_default__item" role="presentation">
+                <button class={scheduleTabClass} type="button" role="tab" data-tab="schedule" onclick={handleTabClick}>
+                    Repayment Schedule
+                </button>
+            </li>
+            <li class="slds-tabs_default__item" role="presentation">
+                <button class={verificationTabClass} type="button" role="tab" data-tab="verification" onclick={handleTabClick}>
+                    Verification
+                </button>
+            </li>
+        </ul>
+
+        <div class="application-panel-body">
+            <template if:true={isOverviewActive}>
+                <div class="detail-grid">
+                    <section class="detail-section">
+                        <h4>Application Details</h4>
+                        <dl class="detail-list">
+                            <dt>Application ID</dt>
+                            <dd>{application.applicationNumber}</dd>
+                            <dt>Account</dt>
+                            <dd>{application.accountName}</dd>
+                            <dt>Product</dt>
+                            <dd>{application.productName}</dd>
+                            <dt>Product Type</dt>
+                            <dd>{application.productType}</dd>
+                            <dt>Stage</dt>
+                            <dd>{application.stage}</dd>
+                            <dt>Status</dt>
+                            <dd><span class={application.statusBadgeClass}>{application.status}</span></dd>
+                            <dt>Submitted</dt>
+                            <dd>{application.formattedSubmittedDate}</dd>
+                            <dt>Expected Close</dt>
+                            <dd>{application.formattedExpectedCloseDate}</dd>
+                        </dl>
+                    </section>
+
+                    <section class="detail-section">
+                        <h4>Financial Summary</h4>
+                        <dl class="detail-list">
+                            <dt>Requested Amount</dt>
+                            <dd>{application.formattedRequestedAmount}</dd>
+                            <dt>Approved Amount</dt>
+                            <dd>{application.formattedApprovedAmount}</dd>
+                            <dt>Payment Amount</dt>
+                            <dd>{application.formattedPaymentAmount}</dd>
+                            <dt>Payment Frequency</dt>
+                            <dd>{application.displayPaymentFrequency}</dd>
+                            <dt>Interest Rate</dt>
+                            <dd>{application.formattedInterestRate}</dd>
+                            <dt>Term</dt>
+                            <dd>{application.displayTerm}</dd>
+                            <dt>Maturity Date</dt>
+                            <dd>{application.formattedMaturityDate}</dd>
+                            <dt>Proposed Exposure</dt>
+                            <dd>{application.formattedProposedExposure}</dd>
+                        </dl>
+                    </section>
+                </div>
+            </template>
+
+            <template if:true={isPartiesActive}>
+                <template if:true={hasParties}>
+                    <table class="slds-table slds-table_cell-buffer slds-table_bordered application-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Party</th>
+                                <th scope="col">Type</th>
+                                <th scope="col">Account</th>
+                                <th scope="col">Contact</th>
+                                <th scope="col">Ownership</th>
+                                <th scope="col">Direct Exposure</th>
+                                <th scope="col">Indirect Exposure</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template for:each={parties} for:item="party">
+                                <tr key={party.partyId}>
+                                    <td>{party.displayPartyName}</td>
+                                    <td>{party.displayPartyType}</td>
+                                    <td>{party.displayAccountName}</td>
+                                    <td>{party.displayContactName}</td>
+                                    <td>{party.formattedPercentOwnership}</td>
+                                    <td>{party.formattedDirectProposedExposure}</td>
+                                    <td>{party.formattedIndirectProposedExposure}</td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </template>
+                <template if:false={hasParties}>
+                    <p class="empty-state">No parties found for this application.</p>
+                </template>
+            </template>
+
+            <template if:true={isPricingActive}>
+                <template if:true={hasSelectedPricing}>
+                    <div class="detail-grid">
+                        <section class="detail-section">
+                            <h4>Selected Offer</h4>
+                            <dl class="detail-list">
+                                <dt>Pricing ID</dt>
+                                <dd>{selectedPricing.pricingName}</dd>
+                                <dt>Pricing Method</dt>
+                                <dd>{selectedPricing.displayPricingMethod}</dd>
+                                <dt>Payment Amount</dt>
+                                <dd>{selectedPricing.formattedPaymentAmount}</dd>
+                                <dt>Payment Frequency</dt>
+                                <dd>{selectedPricing.displayPaymentFrequency}</dd>
+                                <dt>Interest Rate</dt>
+                                <dd>{selectedPricing.formattedInterestRate}</dd>
+                                <dt>Term</dt>
+                                <dd>{selectedPricing.displayTerm}</dd>
+                                <dt>Total Interest</dt>
+                                <dd>{selectedPricing.formattedTotalInterest}</dd>
+                                <dt>Yield</dt>
+                                <dd>{selectedPricing.formattedYieldPercent}</dd>
+                            </dl>
+                        </section>
+                    </div>
+                </template>
+                <template if:false={hasSelectedPricing}>
+                    <p class="empty-state">No selected pricing row found.</p>
+                </template>
+            </template>
+
+            <template if:true={isScheduleActive}>
+                <template if:true={hasRepaymentSchedule}>
+                    <table class="slds-table slds-table_cell-buffer slds-table_bordered application-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">Due Date</th>
+                                <th scope="col">Principal</th>
+                                <th scope="col">Interest</th>
+                                <th scope="col">Fee</th>
+                                <th scope="col">Total Due</th>
+                                <th scope="col">Opening Balance</th>
+                                <th scope="col">Closing Balance</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template for:each={repaymentSchedule} for:item="item">
+                                <tr key={item.scheduleId}>
+                                    <td>{item.displayPaymentNumber}</td>
+                                    <td>{item.formattedDueDate}</td>
+                                    <td>{item.formattedPrincipal}</td>
+                                    <td>{item.formattedInterest}</td>
+                                    <td>{item.formattedFee}</td>
+                                    <td>{item.formattedTotalDue}</td>
+                                    <td>{item.formattedOpeningBalance}</td>
+                                    <td>{item.formattedClosingBalance}</td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </template>
+                <template if:false={hasRepaymentSchedule}>
+                    <p class="empty-state">No repayment schedule rows found.</p>
+                </template>
+            </template>
+
+            <template if:true={isVerificationActive}>
+                <div class="verification-grid">
+                    <div class="verification-item">
+                        <span>Manual Review</span>
+                        <strong>{application.displayManualReviewStatus}</strong>
+                    </div>
+                    <div class="verification-item">
+                        <span>Manual Approval</span>
+                        <strong>{application.displayManualApprovalStatus}</strong>
+                    </div>
+                    <div class="verification-item">
+                        <span>Credit</span>
+                        <strong>{application.displayCreditVerificationStatus}</strong>
+                    </div>
+                    <div class="verification-item">
+                        <span>KYC</span>
+                        <strong>{application.displayKycVerificationStatus}</strong>
+                    </div>
+                    <div class="verification-item">
+                        <span>KYB</span>
+                        <strong>{application.displayKybVerificationStatus}</strong>
+                    </div>
+                    <div class="verification-item">
+                        <span>Income</span>
+                        <strong>{application.displayVoiVerificationStatus}</strong>
+                    </div>
+                    <div class="verification-item">
+                        <span>Employment</span>
+                        <strong>{application.displayVoeVerificationStatus}</strong>
+                    </div>
+                    <div class="verification-item">
+                        <span>Credit Approval</span>
+                        <strong>{application.displayCreditApprovalStatus}</strong>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
+</template>

@@ -1,0 +1,135 @@
+.application-details-panel {
+    background: #ffffff;
+    border: 1px solid #dddbda;
+    border-radius: 0.5rem;
+    padding: 1rem;
+}
+
+.application-panel-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.application-panel-header h3 {
+    color: #181818;
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.application-tab-link {
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    font: inherit;
+}
+
+.application-panel-body {
+    padding-top: 1rem;
+}
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.detail-section {
+    border: 1px solid #dddbda;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    background: #f8f9fa;
+}
+
+.detail-section h4 {
+    color: #181818;
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin: 0 0 0.75rem 0;
+}
+
+.detail-list {
+    display: grid;
+    grid-template-columns: minmax(8rem, 45%) minmax(0, 1fr);
+    gap: 0.5rem 0.75rem;
+    margin: 0;
+}
+
+.detail-list dt {
+    color: #706e6b;
+    font-size: 0.8125rem;
+}
+
+.detail-list dd {
+    color: #181818;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    margin: 0;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    text-align: right;
+}
+
+.application-table {
+    background: #ffffff;
+}
+
+.application-table thead th {
+    background: #f3f2f2;
+    color: #181818;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.empty-state {
+    color: #706e6b;
+    font-size: 0.875rem;
+    margin: 0;
+    padding: 1rem;
+    text-align: center;
+}
+
+.verification-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.75rem;
+}
+
+.verification-item {
+    background: #f8f9fa;
+    border: 1px solid #dddbda;
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+}
+
+.verification-item span {
+    color: #706e6b;
+    display: block;
+    font-size: 0.75rem;
+    margin-bottom: 0.25rem;
+}
+
+.verification-item strong {
+    color: #181818;
+    display: block;
+    font-size: 0.875rem;
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 900px) {
+    .detail-grid,
+    .verification-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .detail-list {
+        grid-template-columns: 1fr;
+    }
+
+    .detail-list dd {
+        text-align: left;
+    }
+}
