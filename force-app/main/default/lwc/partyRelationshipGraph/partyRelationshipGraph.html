@@ -1,0 +1,22 @@
+<template>
+    <div class="graph-container slds-var-p-around_small">
+        <template lwc:if={isLoading}>
+            <lightning-spinner alternative-text="Loading graph"></lightning-spinner>
+        </template>
+        <template lwc:elseif={errorFlag}>
+            <q2lwcc-error-panel errors={graphErrorMessage}></q2lwcc-error-panel>
+        </template>
+        <template lwc:elseif={hasGraphData}>
+            <c-relationship-graph
+                section-width={effectiveSectionWidth}
+                selected-party-acc-id={graphSelectedAccountId}
+                all-application-relationship-list={graphByAccountId}
+                party-accounts-list={partyAccountIds}
+                invoked-from-account-page={isAccountContext}>
+            </c-relationship-graph>
+        </template>
+        <template lwc:else>
+            <div class="slds-text-color_weak slds-var-p-around_small">No relationship graph data.</div>
+        </template>
+    </div>
+</template>

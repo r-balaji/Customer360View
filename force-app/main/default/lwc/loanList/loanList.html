@@ -1,0 +1,82 @@
+<template>
+    <div class="loan-list-container">
+        <!-- Loading State -->
+        <template if:true={isLoading}>
+            <div class="slds-text-align_center slds-p-around_large">
+                <lightning-spinner alternative-text="Loading loans" size="medium"></lightning-spinner>
+                <p class="slds-text-body_regular slds-m-top_medium">Loading loans...</p>
+            </div>
+        </template>
+
+        <!-- Error State -->
+        <template if:true={hasError}>
+            <div class="slds-box slds-theme_error slds-text-align_center slds-p-around_medium">
+                <lightning-icon icon-name="utility:error" size="small" class="slds-m-right_x-small"></lightning-icon>
+                <span class="slds-text-body_regular">{errorMessage}</span>
+            </div>
+        </template>
+
+        <!-- Loan List -->
+        <template if:false={isLoading}>
+            <template if:true={hasActiveLoans}>
+                <div class="loan-list">
+                    <template for:each={loans} for:item="loan">
+                        <div key={loan.loanAccountId} class="loan-item">
+                            <template if:true={showSelection}>
+                                <div class="loan-selection">
+                                    <template if:true={isSingleSelectionMode}>
+                                        <lightning-input
+                                            type="radio"
+                                            name="loanSelection"
+                                            value={loan.loanAccountId}
+                                            checked={loan.isSelected}
+                                            onchange={handleLoanSelection}
+                                            label="">
+                                        </lightning-input>
+                                    </template>
+                                    <template if:false={isSingleSelectionMode}>
+                                        <lightning-input
+                                            type="checkbox"
+                                            value={loan.loanAccountId}
+                                            checked={loan.isSelected}
+                                            onchange={handleLoanSelection}
+                                            label="">
+                                        </lightning-input>
+                                    </template>
+                                </div>
+                            </template>
+
+                            <div class="loan-details">
+                                <div class="loan-header">
+                                    <span class="loan-id">{loan.loanId}</span>
+                                    <span class="loan-type">{loan.productType}</span>
+                                    <span class={loan.statusBadgeClass}>{loan.status}</span>
+                                </div>
+                                <div class="loan-info">
+                                    <div class="info-item">
+                                        <span class="info-label">Balance:</span>
+                                        <span class="info-value">{loan.formattedBalance}</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">Next Due:</span>
+                                        <span class="info-value">{loan.formattedNextDue}</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">Rate:</span>
+                                        <span class="info-value">{loan.formattedRate}</span>
+                                    </div>
+                                    <template if:true={loan.daysPastDue}>
+                                        <div class="info-item">
+                                            <span class="info-label">DPD:</span>
+                                            <span class="info-value">{loan.daysPastDue}</span>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </template>
+        </template>
+    </div>
+</template>
