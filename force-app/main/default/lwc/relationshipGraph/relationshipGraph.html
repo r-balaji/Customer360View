@@ -1,0 +1,176 @@
+<template>
+    <template lwc:if={errorFlag}>
+        <q2lwcc-error-panel errors={detailErrorMsg} friendly-message={errorMsg}></q2lwcc-error-panel>
+    </template>
+    <template lwc:else>
+        <section class="graph-shell" aria-label="Account relationship network">
+            <div class="graph-toolbar">
+                <div class="graph-intro">
+                    <h2>Relationship Graph</h2>
+                    <p>{graphSubtitle}</p>
+                </div>
+                <div class="toolbar-actions">
+                    <div class="graph-legend" role="list" aria-label="Entity types">
+                        <span class="legend-item" role="listitem">
+                            <span class="legend-dot legend-dot-individual"></span>
+                            Individual
+                        </span>
+                        <span class="legend-item" role="listitem">
+                            <span class="legend-dot legend-dot-business"></span>
+                            Business
+                        </span>
+                        <span class="legend-item" role="listitem">
+                            <span class="legend-dot legend-dot-trust"></span>
+                            Trust
+                        </span>
+                        <span lwc:if={invokedFromAccountPage} class="legend-item" role="listitem">
+                            <span class="legend-dot legend-dot-collateral"></span>
+                            Owned collateral
+                        </span>
+                    </div>
+                    <div class="graph-controls" role="group" aria-label="Graph view controls">
+                        <lightning-button-icon
+                            icon-name="utility:dash"
+                            variant="border"
+                            alternative-text="Zoom out"
+                            title="Zoom out"
+                            onclick={zoomOut}>
+                        </lightning-button-icon>
+                        <lightning-button-icon
+                            icon-name="utility:add"
+                            variant="border"
+                            alternative-text="Zoom in"
+                            title="Zoom in"
+                            onclick={zoomIn}>
+                        </lightning-button-icon>
+                        <lightning-button-icon
+                            icon-name="utility:expand_alt"
+                            variant="border"
+                            alternative-text="Fit graph to view"
+                            title="Fit graph to view"
+                            onclick={fitGraphToView}>
+                        </lightning-button-icon>
+                    </div>
+                </div>
+            </div>
+
+            <div class="graph-viewport">
+                <div
+                    class="graph"
+                    role="group"
+                    aria-label="Interactive relationship graph. Use Tab to reach an entity and Enter or Space to select it."
+                    lwc:dom="manual">
+                </div>
+                <aside lwc:if={selectedCollateralAccount} class="collateral-panel" role="region" aria-live="polite" aria-label="Owned collateral and liens">
+                    <div class="collateral-panel-header">
+                        <div>
+                            <p class="panel-eyebrow">Owned collateral</p>
+                            <h3>{selectedCollateralAccount.accountName}</h3>
+                        </div>
+                        <lightning-button-icon
+                            icon-name="utility:close"
+                            variant="bare"
+                            alternative-text="Close collateral details"
+                            title="Close collateral details"
+                            onclick={closeCollateralPanel}>
+                        </lightning-button-icon>
+                    </div>
+                    <div class="collateral-panel-body">
+                        <template for:each={selectedCollateralAccount.collaterals} for:item="collateral">
+                            <article key={collateral.id} class="collateral-card">
+                                <div class="collateral-card-heading">
+                                    <div class="collateral-icon">
+                                        <lightning-icon
+                                            icon-name="standard:asset_object"
+                                            size="small"
+                                            alternative-text="Collateral">
+                                        </lightning-icon>
+                                    </div>
+                                    <div class="collateral-title">
+                                        <h4>{collateral.name}</h4>
+                                        <p>{collateral.type}</p>
+                                    </div>
+                                    <span lwc:if={collateral.hasOwnership} class="ownership-pill">
+                                        <lightning-formatted-number
+                                            value={collateral.ownershipPercentage}
+                                            maximum-fraction-digits="2">
+                                        </lightning-formatted-number>% owned
+                                    </span>
+                                </div>
+                                <div lwc:if={collateral.hasDisplayValue} class="collateral-value">
+                                    <span>{collateral.valueLabel}</span>
+                                    <strong>
+                                        <lightning-formatted-number
+                                            value={collateral.displayValue}
+                                            format-style="currency"
+                                            currency-code="USD"
+                                            maximum-fraction-digits="0">
+                                        </lightning-formatted-number>
+                                    </strong>
+                                </div>
+                                <div lwc:if={collateral.crossCollateralized} class="cross-collateralized">
+                                    <lightning-icon icon-name="utility:link" size="xx-small" alternative-text=""></lightning-icon>
+                                    Cross-collateralized
+                                </div>
+                                <section lwc:if={collateral.hasLiens} class="detail-section">
+                                    <h5>Liens</h5>
+                                    <template for:each={collateral.liens} for:item="lien">
+                                        <div key={lien.id} class="detail-row lien-row">
+                                            <div>
+                                                <strong>{lien.holder}</strong>
+                                                <p>{lien.summary}</p>
+                                                <p lwc:if={lien.context}>{lien.context}</p>
+                                            </div>
+                                            <div class="detail-row-value">
+                                                <strong lwc:if={lien.hasAmount}>
+                                                    <lightning-formatted-number
+                                                        value={lien.amount}
+                                                        format-style="currency"
+                                                        currency-code="USD"
+                                                        maximum-fraction-digits="0">
+                                                    </lightning-formatted-number>
+                                                </strong>
+                                                <span>{lien.status}</span>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </section>
+                                <section lwc:if={collateral.hasApplications} class="detail-section">
+                                    <h5>Applications using this collateral</h5>
+                                    <template for:each={collateral.applications} for:item="application">
+                                        <div key={application.id} class="detail-row">
+                                            <div>
+                                                <strong>{application.name}</strong>
+                                                <p>{application.status}</p>
+                                            </div>
+                                            <div class="detail-row-value">
+                                                <strong lwc:if={application.hasAdvanceValue}>
+                                                    <lightning-formatted-number
+                                                        value={application.advanceValue}
+                                                        format-style="currency"
+                                                        currency-code="USD"
+                                                        maximum-fraction-digits="0">
+                                                    </lightning-formatted-number>
+                                                </strong>
+                                                <span lwc:if={application.hasAdvanceRate}>
+                                                    <lightning-formatted-number
+                                                        value={application.advanceRate}
+                                                        maximum-fraction-digits="2">
+                                                    </lightning-formatted-number>% advance
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </section>
+                            </article>
+                        </template>
+                    </div>
+                </aside>
+            </div>
+
+            <div class="graph-footer">
+                <span>Select any entity to trace its relationships. Five entities appear per row at 100% zoom, and the layout reflows as you zoom. Dotted cards and connections belong to the wider relationship network.</span>
+            </div>
+        </section>
+    </template>
+</template>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ApexClass xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>63.0</apiVersion>
+    <packageVersions>
+        <majorNumber>5</majorNumber>
+        <minorNumber>1002</minorNumber>
+        <namespace>clcommon</namespace>
+    </packageVersions>
+    <packageVersions>
+        <majorNumber>5</majorNumber>
+        <minorNumber>1003</minorNumber>
+        <namespace>genesis</namespace>
+    </packageVersions>
+    <packageVersions>
+        <majorNumber>5</majorNumber>
+        <minorNumber>1001</minorNumber>
+        <namespace>loan</namespace>
+    </packageVersions>
+    <status>Active</status>
+</ApexClass>
