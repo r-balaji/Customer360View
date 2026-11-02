@@ -90,11 +90,11 @@ export default class LoanAccountCard extends LightningElement {
 
     handleToggleExpand() {
         this.isExpanded = !this.isExpanded;
-
+        
         if (this.isExpanded && !this.loanDetails) {
             this.loadLoanDetails();
         }
-
+        
         // Dispatch event to parent
         this.dispatchEvent(new CustomEvent('loanexpand', {
             detail: {
@@ -110,7 +110,7 @@ export default class LoanAccountCard extends LightningElement {
         }
 
         this.isLoading = true;
-
+        
         getLoanDetails({ loanAccountId: this.loanData.loanAccountId })
             .then(result => {
                 // Format the data to avoid function calls in templates
@@ -156,19 +156,19 @@ export default class LoanAccountCard extends LightningElement {
     }
 
     formatDateObject(date) {
-        return date.toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
+        return date.toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'short', 
+            day: 'numeric' 
         });
     }
 
     formatLoanDetails(details) {
         if (!details) return null;
-
+        
         // Deep clone to avoid mutating original
         const formatted = JSON.parse(JSON.stringify(details));
-
+        
         // Format overview dates and currency
         if (formatted.overview) {
             formatted.overview.formattedLoanEffectiveDate = this.formatDate(formatted.overview.loanEffectiveDate);
@@ -183,7 +183,7 @@ export default class LoanAccountCard extends LightningElement {
             formatted.overview.formattedTotalPaidToDate = this.formatCurrency(formatted.overview.totalPaidToDate);
             formatted.overview.formattedNextPaymentAmount = this.formatCurrency(formatted.overview.nextPaymentAmount);
         }
-
+        
         // Format payment schedule installments
         if (formatted.paymentSchedule && formatted.paymentSchedule.installments) {
             formatted.paymentSchedule.installments = formatted.paymentSchedule.installments.map(inst => ({
@@ -198,7 +198,7 @@ export default class LoanAccountCard extends LightningElement {
                 statusBadgeClass: this.getStatusBadgeClass(inst.status)
             }));
         }
-
+        
         // Format transactions
         if (formatted.transactions && formatted.transactions.transactions) {
             formatted.transactions.formattedTotalAmount = this.formatCurrency(formatted.transactions.totalAmount);
@@ -211,7 +211,7 @@ export default class LoanAccountCard extends LightningElement {
                 formattedFeesApplied: this.formatCurrency(trans.feesApplied)
             }));
         }
-
+        
         // Format dues and charges
         if (formatted.duesAndCharges) {
             // Format bills
@@ -231,7 +231,7 @@ export default class LoanAccountCard extends LightningElement {
                     formattedFeesPaid: this.formatCurrency(bill.feesPaid)
                 }));
             }
-
+            
             // Format charges
             if (formatted.duesAndCharges.charges && Array.isArray(formatted.duesAndCharges.charges)) {
                 formatted.duesAndCharges.charges = formatted.duesAndCharges.charges.map(charge => ({
@@ -240,7 +240,7 @@ export default class LoanAccountCard extends LightningElement {
                     formattedChargeDate: this.formatDate(charge.chargeDate)
                 }));
             }
-
+            
             // Format pending schedule
             if (formatted.duesAndCharges.pendingSchedule && Array.isArray(formatted.duesAndCharges.pendingSchedule)) {
                 formatted.duesAndCharges.pendingSchedule = formatted.duesAndCharges.pendingSchedule.map(pending => ({
@@ -252,7 +252,7 @@ export default class LoanAccountCard extends LightningElement {
                     formattedTotalDue: this.formatCurrency(pending.totalDue)
                 }));
             }
-
+            
             // Format summary
             if (formatted.duesAndCharges.summary) {
                 formatted.duesAndCharges.summary.formattedTotalBilledAmount = this.formatCurrency(formatted.duesAndCharges.summary.totalBilledAmount || 0);
@@ -260,7 +260,7 @@ export default class LoanAccountCard extends LightningElement {
                 formatted.duesAndCharges.summary.formattedTotalPendingAmount = this.formatCurrency(formatted.duesAndCharges.summary.totalPendingAmount || 0);
             }
         }
-
+        
         return formatted;
     }
 

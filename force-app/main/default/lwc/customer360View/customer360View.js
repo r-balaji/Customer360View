@@ -4,6 +4,7 @@ import { NavigationMixin } from 'lightning/navigation';
 import getCustomerSummary from '@salesforce/apex/Customer360Controller.getCustomerSummary';
 import getOrgNamespacePrefix from '@salesforce/apex/Customer360Controller.getOrgNamespacePrefix';
 import getApplication360 from '@salesforce/apex/Customer360Controller.getApplication360';
+import getAccountDocuments from '@salesforce/apex/Customer360Controller.getAccountDocuments';
 import getExposureSummary from '@salesforce/apex/Customer360Controller.getExposureSummary';
 import searchAccountsWithFilters from '@salesforce/apex/Customer360Controller.searchAccountsWithFilters';
 
@@ -68,7 +69,7 @@ export default class Customer360View extends NavigationMixin(LightningElement) {
     @track riskSignals = 'Low';
     @track monthlyDue = 0;
     @track expandedLoanId = null; // Track which loan row is expanded
-    @track activeWorkspaceTab = 'application';
+    @track activeWorkspaceTab = 'documents';
     @track applicationSummary;
     @track allApplications = [];
     @track currentApplicationRelationshipFilter = 'ALL';
@@ -77,6 +78,10 @@ export default class Customer360View extends NavigationMixin(LightningElement) {
     @track exposureSummary;
     @track isExposureLoading = false;
     @track isRelationshipGraphCollapsed = false;
+    @track documents = [];
+    @track isDocumentsLoading = false;
+    @track documentsLoaded = false;
+    @track documentErrorMessage = '';
     orgNamespacePrefix = null;
     namespacePromise = null;
 
@@ -211,12 +216,20 @@ export default class Customer360View extends NavigationMixin(LightningElement) {
         return this.activeWorkspaceTab === 'application' && this.showApplicationDetailsTab;
     }
 
+    get isDocumentsTabActive() {
+        return this.activeWorkspaceTab === 'documents' && this.showDocumentsTab;
+    }
+
     get loanDetailsTabClass() {
         return this.isLoanDetailsTabActive ? 'workspace-tab workspace-tab-active' : 'workspace-tab';
     }
 
     get applicationDetailsTabClass() {
         return this.isApplicationDetailsTabActive ? 'workspace-tab workspace-tab-active' : 'workspace-tab';
+    }
+
+    get documentsTabClass() {
+        return this.isDocumentsTabActive ? 'workspace-tab workspace-tab-active' : 'workspace-tab';
     }
 
     get showLoanDetailsTab() {
@@ -227,8 +240,46 @@ export default class Customer360View extends NavigationMixin(LightningElement) {
         return Boolean(this.exposureSummary?.genesisModuleAvailable);
     }
 
+    get showDocumentsTab() {
+        return this.showApplicationDetailsTab;
+    }
+
     get hasAvailableModules() {
         return this.showLoanDetailsTab || this.showApplicationDetailsTab;
+    }
+
+    get loanApplicationsTabLabel() {
+        return `Loan Applications (${this.applicationCount})`;
+    }
+
+    get fundedLoanCount() {
+        return (this.allLoanAccounts || []).filter(loan => loan.productType !== 'Master Facility').length;
+    }
+
+    get fundedLoansTabLabel() {
+        return `Funded Loans (${this.fundedLoanCount})`;
+    }
+
+    get hasDocuments() {
+        return this.documents.length > 0;
+    }
+
+    get documentCount() {
+        return this.documents.length;
+    }
+
+    get documentApplicationCount() {
+        return new Set(
+            this.documents.map(document => document.applicationId).filter(Boolean)
+        ).size;
+    }
+
+    get hasDocumentError() {
+        return Boolean(this.documentErrorMessage);
+    }
+
+    get showDocumentEmptyState() {
+        return this.documentsLoaded && !this.hasDocuments && !this.hasDocumentError;
     }
 
     get showProposedExposure() {
@@ -399,6 +450,7 @@ export default class Customer360View extends NavigationMixin(LightningElement) {
                 this.customerSummary = null;
                 this.allLoanAccounts = [];
                 this.resetApplicationState();
+                this.resetRelatedRecordsState();
                 this.currentFilter = 'all';
                 this.accountInfo = {
                     accountId: null,
@@ -456,13 +508,18 @@ export default class Customer360View extends NavigationMixin(LightningElement) {
 
     handleWorkspaceTabClick(event) {
         const selectedTab = event.currentTarget.dataset.tab;
-        if ((selectedTab === 'loan' && !this.showLoanDetailsTab) ||
-            (selectedTab === 'application' && !this.showApplicationDetailsTab)) {
+        if (!['loan', 'application', 'documents'].includes(selectedTab) ||
+            (selectedTab === 'loan' && !this.showLoanDetailsTab) ||
+            (selectedTab === 'application' && !this.showApplicationDetailsTab) ||
+            (selectedTab === 'documents' && !this.showDocumentsTab)) {
             return;
         }
-        this.activeWorkspaceTab = selectedTab || 'application';
+        this.activeWorkspaceTab = selectedTab;
         if (this.isApplicationDetailsTabActive && !this.applicationSummary && this.selectedAccountId) {
             this.loadApplicationSummary();
+        }
+        if (this.isDocumentsTabActive) {
+            this.loadDocuments();
         }
     }
 
@@ -479,13 +536,20 @@ export default class Customer360View extends NavigationMixin(LightningElement) {
         this.isExposureLoading = false;
     }
 
+    resetRelatedRecordsState() {
+        this.documents = [];
+        this.isDocumentsLoading = false;
+        this.documentsLoaded = false;
+        this.documentErrorMessage = '';
+    }
+
     syncWorkspaceTab() {
-        if ((this.isLoanDetailsTabActive && this.showLoanDetailsTab) ||
-            (this.isApplicationDetailsTabActive && this.showApplicationDetailsTab)) {
+        if (this.isDocumentsTabActive || this.isApplicationDetailsTabActive ||
+            this.isLoanDetailsTabActive) {
             return;
         }
-        this.activeWorkspaceTab = this.showApplicationDetailsTab
-            ? 'application'
+        this.activeWorkspaceTab = this.showDocumentsTab
+            ? 'documents'
             : (this.showLoanDetailsTab ? 'loan' : null);
     }
 
@@ -496,9 +560,10 @@ export default class Customer360View extends NavigationMixin(LightningElement) {
         }
 
         this.isLoading = true;
-        this.activeWorkspaceTab = 'application';
+        this.activeWorkspaceTab = 'documents';
         this.resetApplicationState();
         this.resetExposureState();
+        this.resetRelatedRecordsState();
         this.loadExposureSummary();
 
         getCustomerSummary({ accountId: this.selectedAccountId })
@@ -574,12 +639,37 @@ export default class Customer360View extends NavigationMixin(LightningElement) {
                 this.syncWorkspaceTab();
                 if (this.showApplicationDetailsTab) {
                     this.loadApplicationSummary();
+                    this.loadDocuments();
                 }
             })
             .catch(error => {
                 const errorMessage = error.body?.message || error.message || 'Unknown error occurred';
                 this.isExposureLoading = false;
+                this.syncWorkspaceTab();
                 this.showError('Error', 'Failed to load customer exposure: ' + errorMessage);
+            });
+    }
+
+    loadDocuments() {
+        if (!this.selectedAccountId || !this.showDocumentsTab ||
+            this.isDocumentsLoading || this.documentsLoaded) {
+            return;
+        }
+
+        this.isDocumentsLoading = true;
+        this.documentErrorMessage = '';
+        getAccountDocuments({ accountId: this.selectedAccountId })
+            .then(result => {
+                this.documents = this.formatDocuments(result || []);
+                this.documentsLoaded = true;
+                this.isDocumentsLoading = false;
+            })
+            .catch(error => {
+                this.documentErrorMessage = error.body?.message || error.message ||
+                    'Unable to load application documents.';
+                this.documents = [];
+                this.documentsLoaded = true;
+                this.isDocumentsLoading = false;
             });
     }
 
@@ -601,6 +691,51 @@ export default class Customer360View extends NavigationMixin(LightningElement) {
                 this.showError('Error', 'Failed to load application details: ' + errorMessage);
                 this.resetApplicationState();
             });
+    }
+
+    formatDocuments(documents) {
+        return documents.map(document => ({
+            ...document,
+            displayTitle: document.title || document.categoryName || 'Untitled document',
+            displayCategory: document.categoryName || 'Application document',
+            displayApplication: document.applicationNumber || 'Application',
+            displayFileType: (document.fileType || 'File').toUpperCase(),
+            displayStatus: document.categoryStatus || 'Uploaded',
+            fileIcon: this.getDocumentIcon(document.fileType),
+            formattedSize: this.formatFileSize(document.contentSize),
+            formattedLastModifiedDate: this.formatDate(document.lastModifiedDate) || '-',
+            statusClass: this.getDocumentStatusClass(document.categoryStatus)
+        }));
+    }
+
+    getDocumentIcon(fileType) {
+        const normalizedType = (fileType || '').toUpperCase();
+        if (normalizedType === 'PDF') return 'doctype:pdf';
+        if (['PNG', 'JPG', 'JPEG', 'GIF', 'BMP', 'TIFF'].includes(normalizedType)) return 'doctype:image';
+        if (['DOC', 'DOCX', 'RTF'].includes(normalizedType)) return 'doctype:word';
+        if (['XLS', 'XLSX'].includes(normalizedType)) return 'doctype:excel';
+        if (normalizedType === 'CSV') return 'doctype:csv';
+        if (['PPT', 'PPTX'].includes(normalizedType)) return 'doctype:ppt';
+        if (['TXT', 'TEXT'].includes(normalizedType)) return 'doctype:txt';
+        return 'doctype:unknown';
+    }
+
+    getDocumentStatusClass(status) {
+        const normalizedStatus = (status || '').toUpperCase();
+        if (normalizedStatus.includes('APPROVED') || normalizedStatus.includes('COMPLETE')) {
+            return 'related-record-pill document-status-complete';
+        }
+        if (normalizedStatus.includes('REJECT') || normalizedStatus.includes('EXPIRE')) {
+            return 'related-record-pill document-status-attention';
+        }
+        return 'related-record-pill document-status-default';
+    }
+
+    formatFileSize(sizeInBytes) {
+        const bytes = Number(sizeInBytes) || 0;
+        if (bytes < 1024) return `${bytes} B`;
+        if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+        return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
     }
 
     formatApplications(applications) {
@@ -1205,6 +1340,31 @@ export default class Customer360View extends NavigationMixin(LightningElement) {
         };
         const recordUrl = await this[NavigationMixin.GenerateUrl](pageReference);
         window.open(recordUrl, '_blank');
+    }
+
+    handleDocumentPreview(event) {
+        const contentDocumentId = event.currentTarget.dataset.documentId;
+        if (!contentDocumentId) {
+            return;
+        }
+
+        this[NavigationMixin.Navigate]({
+            type: 'standard__namedPage',
+            attributes: {
+                pageName: 'filePreview'
+            },
+            state: {
+                recordIds: contentDocumentId,
+                selectedRecordId: contentDocumentId
+            }
+        });
+    }
+
+    handleDocumentDownload(event) {
+        const contentVersionId = event.currentTarget.dataset.versionId;
+        if (contentVersionId) {
+            window.open(`/sfc/servlet.shepherd/version/download/${contentVersionId}`, '_blank');
+        }
     }
 
     async openLoanPaymentSelector(action) {

@@ -25,7 +25,7 @@
                 <div class="slds-text-body_regular slds-m-bottom_medium">
                     {instructionText}
                 </div>
-
+                
                 <!-- Reusable Loan List Component -->
                 <c-loan-list
                     account-id={effectiveAccountId}
@@ -46,7 +46,7 @@
                             class="pay-button">
                         </lightning-button>
                     </template>
-
+                    
                     <!-- List Payment Transaction Button for Reverse Payment action -->
                     <template if:true={isReversePaymentAction}>
                         <template if:false={showTransactions}>
@@ -59,7 +59,7 @@
                             </lightning-button>
                         </template>
                     </template>
-
+                    
                     <!-- List Charges Button for Waive Fee action -->
                     <template if:true={isWaiveFeeAction}>
                         <lightning-button
@@ -70,7 +70,7 @@
                             class="pay-button">
                         </lightning-button>
                     </template>
-
+                    
                     <!-- Setup Promise to Pay Button for Promise to Pay action -->
                     <template if:true={isPromiseToPayAction}>
                         <lightning-button
@@ -109,7 +109,7 @@
                         <h3 class="slds-text-heading_small slds-m-top_medium slds-m-bottom_small">
                             Recent Payment Transactions
                         </h3>
-
+                        
                         <template if:true={isLoadingTransactions}>
                             <div class="slds-text-align_center slds-p-around_medium">
                                 <lightning-spinner alternative-text="Loading"></lightning-spinner>
@@ -238,7 +238,7 @@
                         <h3 class="slds-text-heading_small slds-m-top_medium slds-m-bottom_small">
                             Unpaid Charges
                         </h3>
-
+                        
                         <template if:true={isLoadingCharges}>
                             <div class="slds-text-align_center slds-p-around_medium">
                                 <lightning-spinner alternative-text="Loading"></lightning-spinner>

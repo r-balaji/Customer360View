@@ -1,6 +1,7 @@
 import { LightningElement, api, track, wire } from 'lwc';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
-import { CurrentPageReference, NavigationMixin } from 'lightning/navigation';
+import { CurrentPageReference } from 'lightning/navigation';
+import { NavigationMixin } from 'lightning/navigation';
 import { getRecord } from 'lightning/uiRecordApi';
 import getLoanAccountFieldId from '@salesforce/apex/Customer360Controller.getLoanAccountFieldId';
 import getRepaymentTransactionAdjustmentFieldId from '@salesforce/apex/Customer360Controller.getRepaymentTransactionAdjustmentFieldId';
@@ -44,7 +45,7 @@ export default class LoanPaymentSelector extends NavigationMixin(LightningElemen
     @wire(CurrentPageReference)
     getStateParameters(currentPageReference) {
         if (currentPageReference) {
-            const urlAccountId = currentPageReference.state?.accountId ||
+            const urlAccountId = currentPageReference.state?.accountId || 
                                 currentPageReference.state?.c__accountId ||
                                 currentPageReference.attributes?.accountId;
             if (urlAccountId && !this.effectiveAccountId) {
@@ -62,7 +63,7 @@ export default class LoanPaymentSelector extends NavigationMixin(LightningElemen
     connectedCallback() {
         // Load org-specific Visualforce configuration dynamically.
         this.configurationPromise = this.loadConfiguration();
-
+        
         // Priority 1: Check sessionStorage first (set by parent component - most reliable)
         if (!this.effectiveAccountId) {
             const sessionAccountId = sessionStorage.getItem('loanPaymentAccountId');
@@ -72,21 +73,21 @@ export default class LoanPaymentSelector extends NavigationMixin(LightningElemen
                 sessionStorage.removeItem('loanPaymentAccountId');
             }
         }
-
+        
         // Get action from sessionStorage
         const sessionAction = sessionStorage.getItem('loanAction');
         if (sessionAction) {
             this.action = sessionAction;
             sessionStorage.removeItem('loanAction');
         }
-
+        
         // Priority 2: Read accountId and action from URL immediately (before it gets cleared)
         if (!this.effectiveAccountId) {
             // Try multiple ways to get accountId from URL
             const urlParams = new URLSearchParams(window.location.search);
-            let urlAccountId = urlParams.get('accountId') ||
+            let urlAccountId = urlParams.get('accountId') || 
                               urlParams.get('c__accountId');
-
+            
             // Also try reading from the full URL using regex (before Salesforce clears it)
             if (!urlAccountId) {
                 const fullUrl = window.location.href;
@@ -95,12 +96,12 @@ export default class LoanPaymentSelector extends NavigationMixin(LightningElemen
                     urlAccountId = decodeURIComponent(accountIdMatch[1]);
                 }
             }
-
+            
             if (urlAccountId) {
                 this.internalAccountId = urlAccountId;
             }
         }
-
+        
         // Get action from URL if not already set
         if (this.action === 'takePayment') {
             const urlParams = new URLSearchParams(window.location.search);
@@ -135,17 +136,17 @@ export default class LoanPaymentSelector extends NavigationMixin(LightningElemen
     handleSelectionChange(event) {
         const selectedLoans = event.detail.selectedLoans;
         const previousLoanId = this.selectedLoan ? this.selectedLoan.loanAccountId : null;
-
+        
         if (selectedLoans && selectedLoans.length > 0) {
             const newSelectedLoan = selectedLoans[0]; // For single selection
             const newLoanId = newSelectedLoan.loanAccountId;
-
+            
             // If a different loan is selected, reset the transaction/charge list
             if (previousLoanId !== newLoanId) {
                 this.resetTransactionList();
                 this.resetChargeList();
             }
-
+            
             this.selectedLoan = newSelectedLoan;
         } else {
             this.selectedLoan = null;
@@ -271,7 +272,7 @@ export default class LoanPaymentSelector extends NavigationMixin(LightningElemen
         }
 
         const loanAccountId = this.selectedLoan.loanAccountId || '';
-
+        
         if (!loanAccountId) {
             this.showError('Invalid Loan', 'Loan Account ID is missing.');
             return;
@@ -281,12 +282,12 @@ export default class LoanPaymentSelector extends NavigationMixin(LightningElemen
         this.isLoadingTransactions = true;
         this.showTransactions = true;
         this.selectedTransaction = null; // Reset selection
-
+        
         getRecentPaymentTransactions({ loanAccountId: loanAccountId })
             .then(result => {
                 this.paymentTransactions = result || [];
                 this.isLoadingTransactions = false;
-
+                
                 // No need to show toast here - the UI will display the message
             })
             .catch(error => {
@@ -308,7 +309,7 @@ export default class LoanPaymentSelector extends NavigationMixin(LightningElemen
         }
 
         const loanAccountId = this.selectedLoan.loanAccountId || '';
-
+        
         if (!loanAccountId) {
             this.showError('Invalid Loan', 'Loan Account ID is missing.');
             return;
@@ -317,7 +318,7 @@ export default class LoanPaymentSelector extends NavigationMixin(LightningElemen
         // Fetch unpaid charges for the selected loan
         this.isLoadingCharges = true;
         this.showCharges = true;
-
+        
         getUnpaidCharges({ loanAccountId: loanAccountId })
             .then(result => {
                 this.charges = result || [];
@@ -339,7 +340,7 @@ export default class LoanPaymentSelector extends NavigationMixin(LightningElemen
 
         // Construct the waive fee URL to open the Visualforce page
         const loanAccountId = this.selectedLoan.loanAccountId || ''; // Salesforce ID of the loan account
-
+        
         if (!loanAccountId) {
             this.showError('Invalid Loan', 'Loan Account ID is missing.');
             return;
@@ -367,7 +368,7 @@ export default class LoanPaymentSelector extends NavigationMixin(LightningElemen
         // Construct the Promise to Pay URL to open the Automated Payment Setup creation page
         const baseUrl = window.location.origin;
         const loanAccountId = this.selectedLoan.loanAccountId || ''; // Salesforce ID of the loan account
-
+        
         if (!loanAccountId) {
             this.showError('Invalid Loan', 'Loan Account ID is missing.');
             return;
@@ -380,7 +381,7 @@ export default class LoanPaymentSelector extends NavigationMixin(LightningElemen
         const clContractFieldApiName = this.getObjectApiName('CL_Contract__c');
         const defaultFieldValue = `${clContractFieldApiName}=${loanAccountId}`;
         const encodedFieldValue = encodeURIComponent(defaultFieldValue);
-
+        
         // Build URL with defaultFieldValues parameter
         // IMPORTANT: Do NOT include navigationLocation, inContextOfRef, or backgroundContext
         // These parameters cause modal behavior. Use only defaultFieldValues to open as full page.
@@ -473,7 +474,7 @@ export default class LoanPaymentSelector extends NavigationMixin(LightningElemen
         const baseUrl = window.location.origin;
         const transactionId = this.selectedTransaction.transactionId || ''; // Format: LPT-000000002
         const transactionSalesforceId = this.selectedTransaction.id || ''; // Salesforce ID (15 or 18 char)
-
+        
         // Build the Visualforce page URL with transaction parameters
         // Use the dynamically loaded field ID (org-specific)
         const fieldId = await this.loadRequiredFieldId(
@@ -572,9 +573,9 @@ export default class LoanPaymentSelector extends NavigationMixin(LightningElemen
 
     formatDateObject(date) {
         return date.toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
+            year: 'numeric', 
+            month: 'short', 
+            day: 'numeric' 
         });
     }
 

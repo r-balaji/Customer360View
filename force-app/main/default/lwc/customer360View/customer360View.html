@@ -260,31 +260,140 @@
 
         <!-- Main Content - 3 Column Layout -->
         <template if:true={customerSummary}>
-            <template if:true={hasAvailableModules}>
-                <div class="workspace-tabs" role="tablist" aria-label="Customer 360 detail sections">
-                    <template if:true={showApplicationDetailsTab}>
-                        <button
-                            class={applicationDetailsTabClass}
-                            type="button"
-                            role="tab"
-                            aria-selected={isApplicationDetailsTabActive}
-                            data-tab="application"
-                            onclick={handleWorkspaceTabClick}>
-                            Application Details
-                        </button>
+            <div class="workspace-tabs" role="tablist" aria-label="Customer 360 detail sections">
+                <template if:true={showDocumentsTab}>
+                    <button
+                        class={documentsTabClass}
+                        type="button"
+                        role="tab"
+                        aria-selected={isDocumentsTabActive}
+                        data-tab="documents"
+                        onclick={handleWorkspaceTabClick}>
+                        Documents
+                    </button>
+                </template>
+                <template if:true={showApplicationDetailsTab}>
+                    <button
+                        class={applicationDetailsTabClass}
+                        type="button"
+                        role="tab"
+                        aria-selected={isApplicationDetailsTabActive}
+                        data-tab="application"
+                        onclick={handleWorkspaceTabClick}>
+                        {loanApplicationsTabLabel}
+                    </button>
+                </template>
+                <template if:true={showLoanDetailsTab}>
+                    <button
+                        class={loanDetailsTabClass}
+                        type="button"
+                        role="tab"
+                        aria-selected={isLoanDetailsTabActive}
+                        data-tab="loan"
+                        onclick={handleWorkspaceTabClick}>
+                        {fundedLoansTabLabel}
+                    </button>
+                </template>
+            </div>
+
+            <template if:true={isDocumentsTabActive}>
+                <section class="related-records-section" aria-labelledby="documents-heading">
+                    <div class="related-records-header">
+                        <div class="related-records-heading">
+                            <lightning-icon icon-name="standard:file" size="small"></lightning-icon>
+                            <div>
+                                <h2 id="documents-heading">Application Documents</h2>
+                                <p>Files submitted across this customer's loan applications</p>
+                            </div>
+                        </div>
+                        <div class="related-records-metrics" aria-label="Document totals">
+                            <div class="related-records-metric">
+                                <span>Documents</span>
+                                <strong>{documentCount}</strong>
+                            </div>
+                            <div class="related-records-metric">
+                                <span>Applications</span>
+                                <strong>{documentApplicationCount}</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <template if:true={isDocumentsLoading}>
+                        <div class="related-records-loading">
+                            <lightning-spinner alternative-text="Loading application documents" size="medium"></lightning-spinner>
+                        </div>
                     </template>
-                    <template if:true={showLoanDetailsTab}>
-                        <button
-                            class={loanDetailsTabClass}
-                            type="button"
-                            role="tab"
-                            aria-selected={isLoanDetailsTabActive}
-                            data-tab="loan"
-                            onclick={handleWorkspaceTabClick}>
-                            Loan Details
-                        </button>
+
+                    <template if:false={isDocumentsLoading}>
+                        <template if:true={hasDocumentError}>
+                            <div class="related-records-state related-records-state-error">
+                                <lightning-icon icon-name="utility:error" size="small"></lightning-icon>
+                                <span>{documentErrorMessage}</span>
+                            </div>
+                        </template>
+
+                        <template if:true={showDocumentEmptyState}>
+                            <div class="related-records-state">
+                                <lightning-icon icon-name="utility:file" size="small"></lightning-icon>
+                                <span>No application documents found for this account.</span>
+                            </div>
+                        </template>
+
+                        <template if:true={hasDocuments}>
+                            <div class="document-grid">
+                                <template for:each={documents} for:item="document">
+                                    <article key={document.contentVersionId} class="document-card">
+                                        <div class="document-card-main">
+                                            <lightning-icon
+                                                icon-name={document.fileIcon}
+                                                size="medium"
+                                                class="document-file-icon">
+                                            </lightning-icon>
+                                            <div class="document-card-content">
+                                                <h3 title={document.displayTitle}>{document.displayTitle}</h3>
+                                                <p class="document-category">{document.displayCategory}</p>
+                                                <div class="document-tags">
+                                                    <span class="related-record-pill document-file-type">{document.displayFileType}</span>
+                                                    <span class={document.statusClass}>{document.displayStatus}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="document-card-footer">
+                                            <div class="document-context">
+                                                <template if:true={document.applicationId}>
+                                                    <a
+                                                        href="#"
+                                                        data-application-id={document.applicationId}
+                                                        onclick={handleApplicationClick}>
+                                                        {document.displayApplication}
+                                                    </a>
+                                                </template>
+                                                <span>{document.formattedSize}</span>
+                                                <span>{document.formattedLastModifiedDate}</span>
+                                            </div>
+                                            <div class="document-actions">
+                                                <lightning-button-icon
+                                                    icon-name="utility:preview"
+                                                    alternative-text="Preview document"
+                                                    title="Preview document"
+                                                    data-document-id={document.contentDocumentId}
+                                                    onclick={handleDocumentPreview}>
+                                                </lightning-button-icon>
+                                                <lightning-button-icon
+                                                    icon-name="utility:download"
+                                                    alternative-text="Download document"
+                                                    title="Download document"
+                                                    data-version-id={document.contentVersionId}
+                                                    onclick={handleDocumentDownload}>
+                                                </lightning-button-icon>
+                                            </div>
+                                        </div>
+                                    </article>
+                                </template>
+                            </div>
+                        </template>
                     </template>
-                </div>
+                </section>
             </template>
 
             <template if:true={isLoanDetailsTabActive}>
@@ -810,6 +919,7 @@
                     </template>
                 </div>
             </template>
+
         </template>
 
     </div>

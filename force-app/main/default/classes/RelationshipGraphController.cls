@@ -130,11 +130,7 @@ public with sharing class RelationshipGraphController {
             response.status = q2lwcc.LWCConstants.SUCCESS;
             response.response = party.clcommon__Account__c;
         } catch (Exception ex) {
-            response.status = q2lwcc.LWCConstants.ERROR;
-            q2lwcc.LWCResponse.Message errorMessage = new q2lwcc.LWCResponse.Message();
-            errorMessage.type = q2lwcc.LWCConstants.TYPE_ERROR;
-            errorMessage.message = ex.getMessage();
-            response.addMessage(errorMessage);
+            ResponseUtil.setErrorMessage(ex, response);
         }
         return response;
     }
