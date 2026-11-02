@@ -96,7 +96,7 @@ export default class RelationshipGraph extends LightningElement {
     isD3Loaded = false;
     graphRenderVersion = 0;
     rootResolutionMode = 'none';
-
+    
     @api  get sectionWidth(){
         return this._sectionWidth;
     }
@@ -142,7 +142,7 @@ export default class RelationshipGraph extends LightningElement {
         }
     }
 
-    @api
+    @api 
     set selectedPartyAccId(value) {
         this._selectedPartyAccId = value;
         if(this.relationshipLoaded){
@@ -190,7 +190,7 @@ export default class RelationshipGraph extends LightningElement {
             links: {},
         };
     }
-
+  
     invokeGraph() {
         const renderVersion = ++this.graphRenderVersion;
         const loadD3Promise = this.isD3Loaded ? Promise.resolve() : loadScript(this, D3);
@@ -463,12 +463,12 @@ export default class RelationshipGraph extends LightningElement {
         this._svgRoot = svgRoot;
         this._svgStage = svg;
         this.applyZoom();
-
-        //set up the simulation
-        d3.forceSimulation().nodes(this.nodes_data);
-        d3.forceLink(this.links_data).id((d) => d.id);
+        
+        //set up the simulation 
+        d3.forceSimulation().nodes(this.nodes_data);                  
+        d3.forceLink(this.links_data).id((d) => d.id);        
         d3.forceManyBody().strength(-100);
-
+            
         this.link = svg.append('g').attr('class', 'links');
         this.links_data.forEach((relationship) => {
             this.drawLine(relationship.id, relationship.source, relationship.target);
@@ -578,7 +578,7 @@ export default class RelationshipGraph extends LightningElement {
 
         selectdIcon.append('use')
             .attr('xlink:href',LIGHTNING_ICONS + '#task2');
-
+              
         node.append('g')
             .attr('class', 'text-box')
             .attr('id', (d) => 'badge-' + d.id)
@@ -653,7 +653,7 @@ export default class RelationshipGraph extends LightningElement {
             .attr('class', 'ownership-text')
             .attr('pointer-events', 'none')
             .text((d) => d.ownershipPercentage == null ? '' : `${d.ownershipPercentage}% Ownership`);
-
+        
         //for user icons in each nodes
         const nodeIcon = node.append('svg')
                         .attr('x' ,(d)=> d.x + 22 )
@@ -716,11 +716,11 @@ export default class RelationshipGraph extends LightningElement {
     getAccountSpecificData(account, level){
         let node = this.addAccountNode(account, level);
         if(!node.processed){
-            node.processed = true;
+            node.processed = true;          
             let accResult = this.getAccountById(account.Id);
             if(accResult){
                 let queriedAccount = accResult;
-
+                
                 let accountsToProcess = [];
 
                 // add entities
@@ -731,23 +731,23 @@ export default class RelationshipGraph extends LightningElement {
                         records = [...entityRelations];
                     } else {
                         records.push(...entityRelations);
-                    }
+                    }  
 
                     for(let i = 0; i < records.length; i++) {
                         let relation = records[i];
                         if(!relation.clcommon__Related_Entity__c){
                             continue;
                         }
-                        this.addRelation(queriedAccount.Id,
-                                    relation.clcommon__Related_Entity__c,
-                                    relation.clcommon__Entity_Role__c,
+                        this.addRelation(queriedAccount.Id, 
+                                    relation.clcommon__Related_Entity__c, 
+                                    relation.clcommon__Entity_Role__c, 
                                     relation.clcommon__Related_Entity_Role__c,
                                     relation.clcommon__Ownership_Percentage__c);
                         this.addAccountNode(relation.clcommon__Related_Entity__r, level + 1);
                         accountsToProcess.push(relation.clcommon__Related_Entity__r);
                     }
                 }
-
+                
                 // add related entities
                 let relatedEntityRelations = queriedAccount.clcommon__RelatedEntityRelationships__r;
                 if(relatedEntityRelations && relatedEntityRelations.length){
@@ -761,16 +761,16 @@ export default class RelationshipGraph extends LightningElement {
                         let relation = records[i];
                         if(!relation.clcommon__Entity__c)
                           continue;
-                        this.addRelation(queriedAccount.Id,
-                                    relation.clcommon__Entity__c,
-                                    relation.clcommon__Related_Entity_Role__c,
+                        this.addRelation(queriedAccount.Id, 
+                                    relation.clcommon__Entity__c, 
+                                    relation.clcommon__Related_Entity_Role__c, 
                                     relation.clcommon__Entity_Role__c,
                                     relation.clcommon__Ownership_Percentage__c);
                         this.addAccountNode(relation.clcommon__Entity__r, level + 1);
                         accountsToProcess.push(relation.clcommon__Entity__r);
                     }
                 }
-
+              
                 // process added accounts
                 if(accountsToProcess && accountsToProcess.length){
                     for (let i = 0; i < accountsToProcess.length; i++) {
@@ -816,7 +816,7 @@ export default class RelationshipGraph extends LightningElement {
             };
             if(acc.clcommon__Legal_Entity_Type__c){
                 this.graph.nodes[acc.Id].class = acc.clcommon__Legal_Entity_Type__r.Name;
-                if(acc.clcommon__Legal_Entity_Type__r.Name === 'Individual'
+                if(acc.clcommon__Legal_Entity_Type__r.Name === 'Individual' 
                     || acc.clcommon__Legal_Entity_Type__r.Name === 'Sole Proprietorship'){
                     this.graph.nodes[acc.Id].type = 'Individual';
                 }
@@ -856,22 +856,22 @@ export default class RelationshipGraph extends LightningElement {
                         }
                     }
                 }
-            }
-        }
+            } 
+        }   
     }
 
     renderRelationshipGraph(maxNodesPerRow) {
         let count = [];
         let subLevel = [];
         let maxHeight = this.sectionHeight - this.margin.bottom;
-
+    
         this.nodes_data.forEach( (d) => {
             if(count[d.level]){
                 count[d.level] += 1;
             } else {
                 count[d.level] = 1;
             }
-
+            
             d.colIndex = (count[d.level] - 1) % maxNodesPerRow;
             d.sublevel = Math.floor((count[d.level] - 1)/maxNodesPerRow);
             subLevel[d.level] = d.sublevel;
@@ -879,7 +879,7 @@ export default class RelationshipGraph extends LightningElement {
 
         count.forEach((node, index) => {
             let lNode = {
-                level : index,
+                level : index,    
             };
             let totalNoOfSubLevels = 0;
             for(let t = 0; t <= index; t++){
@@ -888,7 +888,7 @@ export default class RelationshipGraph extends LightningElement {
             lNode.y = (this.margin.top) + ((this.boxHeight + this.gap.height) * index) + ((this.boxHeight + this.gap.sublevel) * totalNoOfSubLevels) + this.boxHeight + this.gap.height / 2;
             this.levelLines.push(lNode);
         });
-
+    
         this.nodes_data.forEach((d, i)=>{
             const nodesInRow = Math.min(
                 maxNodesPerRow,
@@ -898,7 +898,7 @@ export default class RelationshipGraph extends LightningElement {
             const rowWidth = (nodesInRow * this.boxWidth) + ((nodesInRow - 1) * this.gap.width);
             const rowStart = this.margin.left + Math.max(0, (availableWidth - rowWidth) / 2);
             d.x = rowStart + ((this.boxWidth + this.gap.width) * d.colIndex);
-
+            
             // get no of levels
             let totalNoOfSubLevels = 0;
             for(let t = 0; t < d.level ; t++){
@@ -910,7 +910,7 @@ export default class RelationshipGraph extends LightningElement {
             }
             d.id = 'n' + i;
         });
-
+        
         const rootNode = this.nodes_data.find((node) => node.level === 0);
         this.links_data.forEach((d) => {
             d.source = this.findNodeBySID(d.source);
@@ -927,8 +927,8 @@ export default class RelationshipGraph extends LightningElement {
                 relatedNode.relationshipRole = relatedNode === d.source ? d.sourcerole : d.targetrole;
             }
         });
-
-        if(maxHeight + this.margin.bottom > this.sectionHeight){
+    
+        if(maxHeight + this.margin.bottom > this.sectionHeight){ 
             d3.select(this.template.querySelector('.graph > svg')).attr('height', maxHeight + this.margin.bottom + this.margin.top); // set svg height to see scroll bar
         }
     }
@@ -958,20 +958,20 @@ export default class RelationshipGraph extends LightningElement {
     }
 
     getCoordinates(source, target){
-        let p1 = {}, p2 = {},
+        let p1 = {}, p2 = {}, 
             p3 = {}, p4 = {};
-        let connectionsList;
+        let connectionsList = [];
         // check if the nodes are aligned horizontally
         if(source.y === target.y){
             p1.x = source.y;
             p1.y = source.x + (this.boxWidth/2);
-
+    
             p2.x = source.y - this.boxHeight/2;
             p2.y = source.x + (this.boxWidth/2);
-
+    
             p3.x = target.y - this.boxHeight/2;
             p3.y = target.x + (this.boxWidth/2);
-
+    
             // p4.x = target.y - this.label.height/2;
             p4.x = target.y;
             p4.y = target.x + (this.boxWidth/2);
@@ -982,36 +982,36 @@ export default class RelationshipGraph extends LightningElement {
                 // join from left side
                 p1.x = source.y + this.boxHeight/2;
                 p1.y = source.x;
-
+    
                 p2.x = source.y + this.boxHeight/2;
                 p2.y = source.x - this.gap.width/2;
-
+    
                 p3.x = target.y + this.boxHeight/2;
                 p3.y = target.x - this.gap.width/2;
-
+    
                 p4.x = target.y + this.boxHeight/2;
-                p4.y = target.x;
+                p4.y = target.x;		
             } else {
                 // join from right side
                 p1.x = source.y + this.boxHeight/2;
                 p1.y = source.x + this.boxWidth;
-
+    
                 p2.x = source.y + this.boxHeight/2;
                 p2.y = source.x + this.boxWidth + this.gap.width/2;
-
+    
                 p3.x = target.y + this.boxHeight/2;
                 p3.y = target.x + this.boxWidth + this.gap.width/2;
-
+    
                 p4.x = target.y + this.boxHeight/2;
                 p4.y = target.x + this.boxWidth;
             }
             connectionsList = [p1, p2, p3, p4];
         } else {
             // which side are the nodes located
-            let midpoint = ((this.margin.left + this.margin.right) + this.maxNodesPerRow*(this.gap.width + this.boxWidth) - this.gap.width)/2;
+            let midpoint = ((this.margin.left + this.margin.right) + this.maxNodesPerRow*(this.gap.width + this.boxWidth) - this.gap.width)/2;	
             let mid = this.maxNodesPerRow/2;
-            let isAdjustmentNeeded = this.isMaxNodesPerRowEven &&
-                                        ((source.level === 0 && (target.colIndex === mid || target.colIndex === mid - 1)) ||
+            let isAdjustmentNeeded = this.isMaxNodesPerRowEven && 
+                                        ((source.level === 0 && (target.colIndex === mid || target.colIndex === mid - 1)) ||   
                                         (target.level === 0 && (source.colIndex === mid || source.colIndex === mid - 1)));
             if((source.x < midpoint && target.x < midpoint) || (source.x > midpoint && target.x > midpoint)){
                 // both on left side or right side
@@ -1019,16 +1019,16 @@ export default class RelationshipGraph extends LightningElement {
                     // left node = source
                     p1.x = source.y + this.boxHeight/2;
                     p1.y = source.x + this.boxWidth;
-
+    
                     p2.x = source.y + this.boxHeight/2;
                     p2.y = source.x + this.boxWidth + this.gap.width/2;
-
+    
                     p3.x = target.y + this.boxHeight/2;
                     p3.y = source.x + this.boxWidth + this.gap.width/2;
-
+    
                     p4.x = target.y + this.boxHeight/2;
-                    p4.y = target.x;
-
+                    p4.y = target.x;	
+    
                     if(isAdjustmentNeeded){
                         if(source.level === 0){
                             p1.x = p2.x = source.y + this.boxHeight;
@@ -1043,16 +1043,16 @@ export default class RelationshipGraph extends LightningElement {
                     // left node = target
                     p1.x = target.y + this.boxHeight/2;
                     p1.y = target.x + this.boxWidth;
-
+    
                     p2.x = target.y + this.boxHeight/2;
                     p2.y = target.x + this.boxWidth + this.gap.width/2;
-
+    
                     p3.x = source.y + this.boxHeight/2;
                     p3.y = target.x + this.boxWidth + this.gap.width/2;
-
+    
                     p4.x = source.y + this.boxHeight/2;
                     p4.y = source.x;
-
+    
                     if(isAdjustmentNeeded){
                         if(source.level === 0){
                             p3.x = p4.x = source.y + this.boxHeight;
@@ -1068,23 +1068,23 @@ export default class RelationshipGraph extends LightningElement {
                     else{
                         connectionsList = [p1, p2, p3, p4];
                     }
-
+                    
                 }
             } else {
                 // one on left and other on right
                 if(source.x < target.x){
                     p1.x = source.y + this.boxHeight/2;
                     p1.y = source.x + this.boxWidth;
-
+    
                     p2.x = source.y + this.boxHeight/2;
                     p2.y = target.x - this.gap.width/2;
-
+    
                     p3.x = target.y + this.boxHeight/2;
                     p3.y = target.x - this.gap.width/2;
-
+    
                     p4.x = target.y + this.boxHeight/2;
                     p4.y = target.x;
-
+    
                     if(isAdjustmentNeeded){
                         if(source.level === 0){
                             p1.x = p2.x = source.y + this.boxHeight;
@@ -1100,16 +1100,16 @@ export default class RelationshipGraph extends LightningElement {
                 } else {
                     p1.x = target.y + this.boxHeight/2;
                     p1.y = target.x + this.boxWidth;
-
+    
                     p2.x = target.y + this.boxHeight/2;
                     p2.y = source.x - this.gap.width/2;
-
+    
                     p3.x = source.y + this.boxHeight/2;
                     p3.y = source.x - this.gap.width/2;
-
+    
                     p4.x = source.y + this.boxHeight/2;
                     p4.y = source.x;
-
+    
                     if(isAdjustmentNeeded){
                         if(source.level === 0){
                             p3.x = p4.x = source.y + this.boxHeight;
@@ -1121,9 +1121,9 @@ export default class RelationshipGraph extends LightningElement {
                             p3.y = target.x + this.boxWidth/2;
                         }
                     }
-                    connectionsList = [ p4,p3,p2,p1];
-                }
-            }
+                    connectionsList = [ p4,p3,p2,p1];	
+                }		
+            } 	
         }
         return connectionsList;
     }
@@ -1191,7 +1191,7 @@ export default class RelationshipGraph extends LightningElement {
         const lastPoint = points[points.length - 1];
         return `${path} L ${lastPoint.x} ${lastPoint.y}`;
     }
-
+    
     addOrRemoveLinks(val, stat) {
         const graphElement = this.template.querySelector('.graph');
         const activeNodeIds = new Set(stat ? [val.id] : []);
@@ -1341,18 +1341,18 @@ export default class RelationshipGraph extends LightningElement {
         viewport.scrollTop = 0;
     }
 
-    addLegend(parent){
+    addLegend(parent){	
         let container = parent.append('div').attr('class', 'legend-box slds-is-absolute slds-var-p-top_xx-small slds-var-p-horizontal_xx-small');
         for (let key in this.colorScheme) {
             if(Object.hasOwn(this.colorScheme, key)){
                 let divWrapper = container.append('div');
-                divWrapper.append('div')
+                divWrapper.append('div')	
                         .attr('class', 'legend')
                         .attr('style', () => { return 'background-color:' + this.colorScheme[key]});
-                divWrapper.append('div')
+                divWrapper.append('div')	
                         .attr('class', 'legend-text slds-is-relative slds-var-p-around_xxx-small')
                         .text(() => key);
             }
-        }
+        }	
     }
 }

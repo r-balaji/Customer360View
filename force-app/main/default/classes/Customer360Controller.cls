@@ -416,6 +416,21 @@ public with sharing class Customer360Controller {
         }
     }
 
+    @AuraEnabled(cacheable=true)
+    public static List<Customer360RelatedRecordsService.DocumentView> getAccountDocuments(String accountId) {
+        if (String.isBlank(accountId)) {
+            throw new AuraHandledException('Account ID is required');
+        }
+
+        try {
+            return Customer360RelatedRecordsService.getAccountDocuments(accountId);
+        } catch (AuraHandledException handledException) {
+            throw handledException;
+        } catch (Exception unexpectedException) {
+            throw new AuraHandledException('Unable to load account documents');
+        }
+    }
+
     // Wrapper Classes
     public class AccountWrapper {
         @AuraEnabled public String id;

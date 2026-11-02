@@ -9,7 +9,7 @@ export default class LoanList extends LightningElement {
     @api selectionMode = 'single'; // 'single' or 'multiple'
     @api selectedLoanIds = []; // Array of selected loan IDs
     @api filterActiveOnly = false; // Filter to show only active loans (default false, set to true via attribute)
-
+    
     @track loans = [];
     @track isLoading = true;
     @track hasError = false;
@@ -20,7 +20,7 @@ export default class LoanList extends LightningElement {
     getStateParameters(currentPageReference) {
         if (currentPageReference) {
             // Try multiple possible parameter names
-            const urlAccountId = currentPageReference.state?.accountId ||
+            const urlAccountId = currentPageReference.state?.accountId || 
                                  currentPageReference.state?.c__accountId ||
                                  currentPageReference.attributes?.accountId;
             if (urlAccountId && !this.accountId) {
@@ -42,14 +42,14 @@ export default class LoanList extends LightningElement {
                 console.log('loanList: AccountId from sessionStorage:', sessionAccountId);
             }
         }
-
+        
         // Priority 2: Read accountId from URL immediately (before it gets cleared by Salesforce)
         if (!this.accountId) {
             // Try multiple ways to get accountId from URL
             const urlParams = new URLSearchParams(window.location.search);
-            let urlAccountId = urlParams.get('accountId') ||
+            let urlAccountId = urlParams.get('accountId') || 
                               urlParams.get('c__accountId');
-
+            
             // Also try reading from the full URL using regex (more reliable)
             if (!urlAccountId) {
                 const fullUrl = window.location.href;
@@ -58,18 +58,18 @@ export default class LoanList extends LightningElement {
                     urlAccountId = decodeURIComponent(accountIdMatch[1]);
                 }
             }
-
+            
             // Try the helper method as fallback
             if (!urlAccountId) {
                 urlAccountId = this.getUrlParameter('accountId') || this.getUrlParameter('c__accountId');
             }
-
+            
             if (urlAccountId) {
                 this.accountId = urlAccountId;
                 console.log('loanList: AccountId from URL:', urlAccountId);
             }
         }
-
+        
         // Load loans if we have accountId
         if (this.accountId) {
             this.loadLoans();
@@ -103,7 +103,7 @@ export default class LoanList extends LightningElement {
             .then(result => {
                 // Filter loans based on filterActiveOnly setting
                 let filteredLoans = result.loans || [];
-
+                
                 if (this.filterActiveOnly) {
                     filteredLoans = filteredLoans.filter(loan => {
                         const status = loan.status || '';
@@ -123,13 +123,13 @@ export default class LoanList extends LightningElement {
 
                 if (this.loans.length === 0) {
                     this.hasError = true;
-                    this.errorMessage = this.filterActiveOnly
-                        ? 'No active loans found for this account.'
+                    this.errorMessage = this.filterActiveOnly 
+                        ? 'No active loans found for this account.' 
                         : 'No loans found for this account.';
                 }
 
                 this.isLoading = false;
-
+                
                 // Dispatch event with loaded loans
                 this.dispatchEvent(new CustomEvent('loansloaded', {
                     detail: { loans: this.loans, count: this.loans.length }
@@ -146,7 +146,7 @@ export default class LoanList extends LightningElement {
 
     handleLoanSelection(event) {
         const loanId = event.target.value;
-
+        
         if (this.selectionMode === 'single') {
             // For single selection, replace the array
             this.selectedLoanIds = [loanId];
@@ -168,7 +168,7 @@ export default class LoanList extends LightningElement {
 
         // Dispatch selection change event
         this.dispatchEvent(new CustomEvent('selectionchange', {
-            detail: {
+            detail: { 
                 selectedLoanIds: [...this.selectedLoanIds], // Create a copy
                 selectedLoans: this.loans.filter(loan => this.selectedLoanIds.includes(loan.loanAccountId))
             }

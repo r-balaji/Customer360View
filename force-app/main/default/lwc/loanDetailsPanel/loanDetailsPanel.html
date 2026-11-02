@@ -4,7 +4,7 @@
         <ul class="slds-tabs_default__nav" role="tablist">
             <li class="slds-tabs_default__item" title="Overview" role="presentation">
                 <a class={overviewTabClass}
-                   href="javascript:void(0);"
+                   href="javascript:void(0);" 
                    role="tab"
                    data-tab="overview"
                    onclick={handleTabClick}>
@@ -13,7 +13,7 @@
             </li>
             <li class="slds-tabs_default__item" title="Bills" role="presentation">
                 <a class={billsTabClass}
-                   href="javascript:void(0);"
+                   href="javascript:void(0);" 
                    role="tab"
                    data-tab="bills"
                    onclick={handleTabClick}>
@@ -22,7 +22,7 @@
             </li>
             <li class="slds-tabs_default__item" title="Charges" role="presentation">
                 <a class={chargesTabClass}
-                   href="javascript:void(0);"
+                   href="javascript:void(0);" 
                    role="tab"
                    data-tab="charges"
                    onclick={handleTabClick}>
@@ -31,7 +31,7 @@
             </li>
             <li class="slds-tabs_default__item" title="Payment Schedule" role="presentation">
                 <a class={scheduleTabClass}
-                   href="javascript:void(0);"
+                   href="javascript:void(0);" 
                    role="tab"
                    data-tab="schedule"
                    onclick={handleTabClick}>
@@ -40,7 +40,7 @@
             </li>
             <li class="slds-tabs_default__item" title="Transactions" role="presentation">
                 <a class={transactionsTabClass}
-                   href="javascript:void(0);"
+                   href="javascript:void(0);" 
                    role="tab"
                    data-tab="transactions"
                    onclick={handleTabClick}>
@@ -49,7 +49,7 @@
             </li>
             <li class="slds-tabs_default__item" title="Dues & Charges" role="presentation">
                 <a class={duesTabClass}
-                   href="javascript:void(0);"
+                   href="javascript:void(0);" 
                    role="tab"
                    data-tab="dues"
                    onclick={handleTabClick}>
@@ -71,28 +71,28 @@
                                 <dl class="slds-list_horizontal slds-wrap overview-dl">
                                     <dt class="slds-item_label slds-text-color_weak">Loan Account #:</dt>
                                     <dd class="slds-item_detail">{loanDetails.loanNumber}</dd>
-
+                                    
                                     <dt class="slds-item_label slds-text-color_weak">Status:</dt>
                                     <dd class="slds-item_detail">{overview.status}</dd>
-
+                                    
                                     <dt class="slds-item_label slds-text-color_weak">Product Type:</dt>
                                     <dd class="slds-item_detail">{overview.productType}</dd>
-
+                                    
                                     <dt class="slds-item_label slds-text-color_weak">Loan Effective Date:</dt>
                                     <dd class="slds-item_detail">{overview.formattedLoanEffectiveDate}</dd>
-
+                                    
                                     <dt class="slds-item_label slds-text-color_weak">Maturity Date:</dt>
                                     <dd class="slds-item_detail">{overview.formattedMaturityDate}</dd>
-
+                                    
                                     <dt class="slds-item_label slds-text-color_weak">Closed Date:</dt>
                                     <dd class="slds-item_detail">{formattedClosedDate}</dd>
-
+                                    
                                     <dt class="slds-item_label slds-text-color_weak">Branch:</dt>
                                     <dd class="slds-item_detail">{overview.branch}</dd>
-
+                                    
                                     <dt class="slds-item_label slds-text-color_weak">Loan Officer:</dt>
                                     <dd class="slds-item_detail">{overview.loanOfficer}</dd>
-
+                                    
                                     <dt class="slds-item_label slds-text-color_weak">Payment Term:</dt>
                                     <dd class="slds-item_detail">{overview.paymentTerm} months</dd>
                                 </dl>
@@ -106,25 +106,25 @@
                                 <dl class="slds-list_horizontal slds-wrap overview-dl">
                                     <dt class="slds-item_label slds-text-color_weak">Original Loan Amount:</dt>
                                     <dd class="slds-item_detail">{overview.formattedLoanAmount}</dd>
-
+                                    
                                     <dt class="slds-item_label slds-text-color_weak">Principal Remaining:</dt>
                                     <dd class="slds-item_detail">{overview.formattedPrincipalRemaining}</dd>
-
+                                    
                                     <dt class="slds-item_label slds-text-color_weak">Interest Remaining:</dt>
                                     <dd class="slds-item_detail">{overview.formattedInterestRemaining}</dd>
-
+                                    
                                     <dt class="slds-item_label slds-text-color_weak">Fees Remaining:</dt>
                                     <dd class="slds-item_detail">{overview.formattedFeesRemaining}</dd>
-
+                                    
                                     <dt class="slds-item_label slds-text-heading_small">Total Outstanding:</dt>
                                     <dd class="slds-item_detail slds-text-heading_small">{overview.formattedTotalOutstanding}</dd>
-
+                                    
                                     <dt class="slds-item_label slds-text-color_weak">Total Paid to Date:</dt>
                                     <dd class="slds-item_detail">{overview.formattedTotalPaidToDate}</dd>
-
+                                    
                                     <dt class="slds-item_label slds-text-color_weak">Interest Rate (APR):</dt>
                                     <dd class="slds-item_detail">{overview.apr}%</dd>
-
+                                    
                                     <dt class="slds-item_label slds-text-color_weak">Payment Frequency:</dt>
                                     <dd class="slds-item_detail">{overview.paymentFrequency}</dd>
                                 </dl>
@@ -158,7 +158,7 @@
                             <div class="slds-text-body_small slds-m-bottom_small">
                                 Total Bills: {bills.length}
                             </div>
-
+                            
                             <table class="slds-table slds-table_cell-buffer slds-table_bordered">
                                 <thead>
                                     <tr class="slds-line-height_reset">
@@ -207,7 +207,7 @@
                             <div class="slds-text-body_small slds-m-bottom_small">
                                 Total Charges: {charges.length}
                             </div>
-
+                            
                             <table class="slds-table slds-table_cell-buffer slds-table_bordered">
                                 <thead>
                                     <tr class="slds-line-height_reset">
@@ -248,10 +248,10 @@
                     <template if:true={transactions}>
                         <div class="slds-m-around_medium">
                             <div class="slds-text-body_small slds-m-bottom_small">
-                                Total Transactions: {transactions.totalTransactions} |
+                                Total Transactions: {transactions.totalTransactions} | 
                                 Total Amount: {transactions.formattedTotalAmount}
                             </div>
-
+                            
                             <table class="slds-table slds-table_cell-buffer slds-table_bordered">
                                 <thead>
                                     <tr class="slds-line-height_reset">
@@ -375,7 +375,7 @@
                                             </div>
                                         </div>
                                     </div>
-
+                                    
                                     <div class="slds-col slds-size_1-of-1 slds-large-size_1-of-2">
                                         <div class="summary-panel">
                                             <h3 class="summary-panel-title">Charges Summary</h3>
