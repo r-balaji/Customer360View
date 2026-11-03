@@ -1,6 +1,5 @@
 import { LightningElement, api, wire } from 'lwc';
 import { CurrentPageReference } from 'lightning/navigation';
-import { CONSTANTS, reduceErrors } from 'q2lwcc/utils';
 import getRelationshipGraphData from '@salesforce/apex/RelationshipGraphController.getRelationshipGraphData';
 import getPartyAccountId from '@salesforce/apex/RelationshipGraphController.getPartyAccountId';
 
@@ -115,37 +114,31 @@ export default class PartyRelationshipGraph extends LightningElement {
         this.isLoading = false;
         const { data, error } = result;
         if (data) {
-            if (data.status === CONSTANTS.STATUS_SUCCESS) {
-                this.errorFlag = false;
-                this.detailErrorMsg = null;
-                this.graphByAccountId = data.response?.graphByAccountId || {};
-                this.partyAccountIds = data.response?.applicationPartyAccountIds || [];
-                this.graphSelectedAccountId = data.response?.selectedAccountId;
-            } else {
-                this.errorFlag = true;
-                this.detailErrorMsg = reduceErrors(data.messages).join('\n');
-            }
+            this.errorFlag = false;
+            this.detailErrorMsg = null;
+            this.graphByAccountId = data.graphByAccountId || {};
+            this.partyAccountIds = data.applicationPartyAccountIds || [];
+            this.graphSelectedAccountId = data.selectedAccountId;
         } else if (error) {
-            this.errorFlag = true;
-            this.detailErrorMsg = reduceErrors(error).join('\n');
+            this.setGraphError(error);
         }
     }
 
     @wire(getPartyAccountId, { partyId: '$partyId' })
     wiredPartyAccountId(result) {
         const { data, error } = result;
-        if (data) {
-            if (data.status === CONSTANTS.STATUS_SUCCESS) {
-                this.selectedAccountId = data.response;
-                // Feed the resolved account id into the graph context so the wire refetches.
-                this.resolveContextIds();
-            } else {
-                this.errorFlag = true;
-                this.detailErrorMsg = reduceErrors(data.messages).join('\n');
-            }
+        if (data !== undefined) {
+            this.selectedAccountId = data;
+            // Feed the resolved account id into the graph context so the wire refetches.
+            this.resolveContextIds();
         } else if (error) {
-            this.errorFlag = true;
-            this.detailErrorMsg = reduceErrors(error).join('\n');
+            this.setGraphError(error);
         }
+    }
+
+    setGraphError(error) {
+        this.errorFlag = true;
+        this.detailErrorMsg = error?.body?.message || error?.message ||
+            'Unable to load relationship graph.';
     }
 }

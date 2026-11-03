@@ -1,6 +1,15 @@
 <template>
     <template lwc:if={errorFlag}>
-        <q2lwcc-error-panel errors={detailErrorMsg} friendly-message={errorMsg}></q2lwcc-error-panel>
+        <div class="slds-notify slds-notify_alert slds-alert_error" role="alert">
+            <lightning-icon
+                icon-name="utility:error"
+                alternative-text="Error"
+                variant="inverse"
+                size="x-small"
+                class="slds-var-m-right_small">
+            </lightning-icon>
+            <span>{graphErrorMessage}</span>
+        </div>
     </template>
     <template lwc:else>
         <section class="graph-shell" aria-label="Account relationship network">
