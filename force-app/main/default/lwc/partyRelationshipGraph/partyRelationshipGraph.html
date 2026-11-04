@@ -4,7 +4,16 @@
             <lightning-spinner alternative-text="Loading graph"></lightning-spinner>
         </template>
         <template lwc:elseif={errorFlag}>
-            <q2lwcc-error-panel errors={graphErrorMessage}></q2lwcc-error-panel>
+            <div class="slds-notify slds-notify_alert slds-alert_error" role="alert">
+                <lightning-icon
+                    icon-name="utility:error"
+                    alternative-text="Error"
+                    variant="inverse"
+                    size="x-small"
+                    class="slds-var-m-right_small">
+                </lightning-icon>
+                <span>{graphErrorMessage}</span>
+            </div>
         </template>
         <template lwc:elseif={hasGraphData}>
             <c-relationship-graph

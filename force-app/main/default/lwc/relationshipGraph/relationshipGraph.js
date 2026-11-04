@@ -2,8 +2,8 @@
 import { LightningElement, api} from 'lwc';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { loadScript} from 'lightning/platformResourceLoader';
-import D3 from '@salesforce/resourceUrl/q2lwcc__d3js';
-import LIGHTNING_ICONS from '@salesforce/resourceUrl/q2lwcc__Lightning_Icons';
+import D3 from '@salesforce/resourceUrl/customer360GraphD3';
+import LIGHTNING_ICONS from '@salesforce/resourceUrl/customer360GraphIcons';
 import getAccountCollateralDetails from '@salesforce/apex/AccountCollateralController.getAccountCollateralDetails';
 
 export default class RelationshipGraph extends LightningElement {
@@ -96,6 +96,10 @@ export default class RelationshipGraph extends LightningElement {
     isD3Loaded = false;
     graphRenderVersion = 0;
     rootResolutionMode = 'none';
+
+    get graphErrorMessage() {
+        return this.detailErrorMsg || 'Unable to load relationship graph.';
+    }
     
     @api  get sectionWidth(){
         return this._sectionWidth;
@@ -661,6 +665,7 @@ export default class RelationshipGraph extends LightningElement {
                         .attr('width',38)
                         .attr('height',38)
                         .style('fill',(d) => this.getNodeColor(d))
+                        .style('color',(d) => this.getNodeColor(d))
                         .attr('viewBox','1000 1000');
 
         nodeIcon.append('rect')
@@ -960,7 +965,7 @@ export default class RelationshipGraph extends LightningElement {
     getCoordinates(source, target){
         let p1 = {}, p2 = {}, 
             p3 = {}, p4 = {};
-        let connectionsList = [];
+        let connectionsList;
         // check if the nodes are aligned horizontally
         if(source.y === target.y){
             p1.x = source.y;

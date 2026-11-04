@@ -19,7 +19,7 @@
         <members>Customer360SummaryServiceTest</members>
         <members>Customer360TestDataFactory</members>
         <members>RelationshipGraphController</members>
-        <members>ResponseUtil</members>
+        <members>RelationshipGraphControllerTest</members>
         <name>ApexClass</name>
     </types>
     <types>
@@ -32,6 +32,11 @@
         <members>partyRelationshipGraph</members>
         <members>relationshipGraph</members>
         <name>LightningComponentBundle</name>
+    </types>
+    <types>
+        <members>customer360GraphD3</members>
+        <members>customer360GraphIcons</members>
+        <name>StaticResource</name>
     </types>
     <types>
         <members>Loan_Payment_Selector</members>

@@ -1,16 +1,23 @@
+/**
+ * Loads the account and application relationships rendered by Customer 360.
+ */
 public with sharing class RelationshipGraphController {
+    /**
+     * @param applicationId Optional application whose active parties seed the graph.
+     * @param accountId Account to select, or the anchor in Account context.
+     * @return Accounts, application-party membership, and the selected account.
+     */
     @AuraEnabled(cacheable=true)
-    public static q2lwcc.LWCResponse getRelationshipGraphData(String applicationId, String accountId) {
-        q2lwcc.LWCResponse res = new q2lwcc.LWCResponse();
-        try {
-            Boolean isApplicationContext = String.isNotBlank(applicationId);
-            if (!isApplicationContext && String.isBlank(accountId)) {
-                throw new q2lwcc.LWCException('Either applicationId or accountId is required.');
-            }
+    public static GraphData getRelationshipGraphData(String applicationId, String accountId) {
+        Boolean isApplicationContext = String.isNotBlank(applicationId);
+        if (!isApplicationContext && String.isBlank(accountId)) {
+            throw new AuraHandledException('Either applicationId or accountId is required.');
+        }
 
+        try {
             Set<Id> applicationPartyAccountIds = new Set<Id>();
             Set<Id> seedAccountIds = new Set<Id>();
-            String selectedAccountId;
+            Id selectedAccountId;
 
             if (isApplicationContext) {
                 List<clcommon__Party__c> parties = [
@@ -30,7 +37,7 @@ public with sharing class RelationshipGraphController {
                 if (String.isNotBlank(accountId) && applicationPartyAccountIds.contains((Id)accountId)) {
                     selectedAccountId = accountId;
                 } else if (!applicationPartyAccountIds.isEmpty()) {
-                    selectedAccountId = (String)applicationPartyAccountIds.iterator().next();
+                    selectedAccountId = applicationPartyAccountIds.iterator().next();
                 }
             } else {
                 seedAccountIds.add((Id)accountId);
@@ -39,14 +46,7 @@ public with sharing class RelationshipGraphController {
             }
 
             if (seedAccountIds.isEmpty()) {
-                Map<String, Object> emptyResponse = new Map<String, Object>{
-                    'graphByAccountId' => new Map<Id, SObject>(),
-                    'applicationPartyAccountIds' => new List<Id>(),
-                    'selectedAccountId' => null
-                };
-                res.response = emptyResponse;
-                res.status = q2lwcc.LWCConstants.SUCCESS;
-                return res;
+                return new GraphData();
             }
 
             List<clcommon__Relationship__c> firstHopRelations = [
@@ -99,26 +99,26 @@ public with sharing class RelationshipGraphController {
                 graphByAccountId.put(accountRecord.Id, accountRecord);
             }
 
-            Map<String, Object> responseMap = new Map<String, Object>{
-                'graphByAccountId' => graphByAccountId,
-                'applicationPartyAccountIds' => new List<Id>(applicationPartyAccountIds),
-                'selectedAccountId' => selectedAccountId
-            };
-            res.response = responseMap;
-            res.status = q2lwcc.LWCConstants.SUCCESS;
+            GraphData result = new GraphData();
+            result.graphByAccountId = graphByAccountId;
+            result.applicationPartyAccountIds = new List<Id>(applicationPartyAccountIds);
+            result.selectedAccountId = selectedAccountId;
+            return result;
         } catch (Exception ex) {
-            res.status = q2lwcc.LWCConstants.ERROR;
-            q2lwcc.LWCResponse.Message errorMessage = new q2lwcc.LWCResponse.Message();
-            errorMessage.type = q2lwcc.LWCConstants.TYPE_ERROR;
-            errorMessage.message = ex.getMessage();
-            res.addMessage(errorMessage);
+            throw new AuraHandledException('Unable to load relationship graph.');
         }
-        return res;
     }
 
+    /**
+     * @param partyId Party whose account should be selected in the graph.
+     * @return The account linked to the party.
+     */
     @AuraEnabled(cacheable=true)
-    public static q2lwcc.LWCResponse getPartyAccountId(String partyId) {
-        q2lwcc.LWCResponse response = new q2lwcc.LWCResponse();
+    public static Id getPartyAccountId(String partyId) {
+        if (String.isBlank(partyId)) {
+            throw new AuraHandledException('Party ID is required.');
+        }
+
         try {
             clcommon__Party__c party = [
                 SELECT clcommon__Account__c
@@ -127,11 +127,16 @@ public with sharing class RelationshipGraphController {
                 WITH SECURITY_ENFORCED
                 LIMIT 1
             ];
-            response.status = q2lwcc.LWCConstants.SUCCESS;
-            response.response = party.clcommon__Account__c;
+            return party.clcommon__Account__c;
         } catch (Exception ex) {
-            ResponseUtil.setErrorMessage(ex, response);
+            throw new AuraHandledException('Unable to load the party account.');
         }
-        return response;
+    }
+
+    /** Graph payload shared with the relationship graph LWC. */
+    public class GraphData {
+        @AuraEnabled public Map<Id, SObject> graphByAccountId = new Map<Id, SObject>();
+        @AuraEnabled public List<Id> applicationPartyAccountIds = new List<Id>();
+        @AuraEnabled public Id selectedAccountId;
     }
 }
